@@ -1,172 +1,556 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="h-full bg-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบตอบรับ e-Meeting</title>
+    <title>ระบบตอบรับและจัดการการประชุม e-Meeting สภานักศึกษา</title>
+    <!-- Tailwind CSS v4 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Prompt', sans-serif; }</style>
-</head>
-<body class="bg-gray-50 text-gray-800 min-h-screen p-4 sm:p-6">
+    <!-- Google Fonts: Prompt & Sarabun (Official UN/Thai Government Standard font feel) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Prompt', 'Sarabun', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
 
-    <div class="max-w-6xl mx-auto space-y-6">
-        
-        <!-- Header & นาฬิกา Real-time -->
-        <header class="bg-indigo-800 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-bold">ระบบตอบรับ e-Meeting สภานักศึกษา</h1>
-                <p class="text-indigo-200 text-sm mt-1">เวลาปัจจุบัน: <span id="realTimeClock" class="font-bold text-white tracking-wider">กำลังโหลด...</span></p>
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Clean UN-Style Card & Inputs */
+        .un-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+        }
+
+        .un-input {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            transition: all 0.15s ease-in-out;
+        }
+        .un-input:focus {
+            background-color: #ffffff;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+            outline: none;
+        }
+
+        .un-modal-backdrop {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Print styles for secretary reports */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .un-card {
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm pointer-events-none"></div>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- ================= UN-STYLE OFFICIAL HEADER BANNER ================= -->
+        <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden border-t-4 border-amber-500">
+            <!-- Decorative Subtle Accent Line -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex items-center gap-4 relative z-10">
+                <!-- Official Seal Emblem -->
+                <div class="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md shrink-0 border border-amber-300/40">
+                    <svg class="w-8 h-8 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h6m-6 0V11m6 0V11m-6 10v-5a1 1 0 011-1h4a1 1 0 011 1v5m-6 0h6"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            สภานักศึกษา • STUDENT COUNCIL E-MEETING
+                        </span>
+                        <span class="text-xs text-blue-200/80 hidden sm:inline">• ระบบสารสนเทศเพื่อการลงทะเบียนและระเบียบวาระ</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">
+                        ระบบตอบรับเข้าร่วมการประชุมสภานักศึกษา
+                    </h1>
+                </div>
             </div>
-            <button onclick="document.getElementById('adminModal').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-medium border border-indigo-500 transition">
-                ⚙️ จัดการลิงก์ (เลขา)
-            </button>
+
+            <!-- Header Actions & Real-Time Clock -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto justify-between md:justify-end relative z-10 border-t md:border-t-0 border-blue-900/80 pt-3 md:pt-0 no-print">
+                <div class="text-left sm:text-right bg-slate-950/40 px-4 py-2 rounded-xl border border-slate-800">
+                    <div class="text-[11px] text-slate-300 font-medium flex items-center gap-1.5 justify-start sm:justify-end">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        เวลาปัจจุบัน (Real-time Clock)
+                    </div>
+                    <div id="realTimeClock" class="text-sm font-semibold text-amber-300 font-mono tracking-wide mt-0.5">
+                        กำลังโหลด...
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="window.print()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 shadow-sm cursor-pointer">
+                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        พิมพ์รายงาน
+                    </button>
+                    <button onclick="toggleAdminModal(true)" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-md border border-sky-400/30 transition flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+                        <svg class="w-4 h-4 text-sky-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        จัดการลิงก์ (ฝ่ายเลขาฯ)
+                    </button>
+                </div>
+            </div>
         </header>
 
-        <!-- ส่วนของเลขา (ซ่อนไว้เป็นค่าเริ่มต้น) -->
-        <div id="adminModal" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-indigo-200 space-y-4 mb-6">
-            <h2 class="font-bold text-indigo-900 text-lg">🔗 สร้างลิงก์สำหรับการประชุมใหม่</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อ/ครั้งที่การประชุม</label>
-                    <input type="text" id="genTitle" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น สามัญประจำเดือนตุลาคม">
+        <!-- ================= MEETING INFO BANNER & QUORUM METRICS ================= -->
+        <div id="meetingInfoBox" class="un-card rounded-2xl p-6 relative overflow-hidden">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div class="space-y-3 max-w-3xl">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="meetingStatusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            การประชุมที่เปิดรับคำตอบ
+                        </span>
+                        <span id="countdownBadge" class="px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span id="countdownText">กำลังคำนวณเวลาคงเหลือ...</span>
+                        </span>
+                    </div>
+
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight" id="displayTitle">
+                        ไม่มีการระบุการประชุม (รอเลขาออกลิงก์)
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-sm">
+                        <div class="flex items-center gap-2 text-slate-700 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200">
+                            <svg class="w-4 h-4 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>กำหนดการ: <strong id="displayDateText" class="text-slate-900 font-semibold">-</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-700 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200">
+                            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>กำหนดปิดฟอร์ม: <strong id="displayDeadline" class="text-rose-700 font-semibold">-</strong></span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">วัน/เวลาประชุม (ข้อความ)</label>
-                    <input type="text" id="genDateText" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น 7 ก.ย. 69 เวลา 17.00-22.00 น.">
+
+                <!-- Quorum Status Card (Official UN Style) -->
+                <div class="w-full lg:w-72 bg-gradient-to-br from-slate-50 to-blue-50/40 p-4.5 rounded-xl border border-slate-200 space-y-3 shrink-0 shadow-2xs">
+                    <div class="flex justify-between items-center text-xs text-slate-600 font-medium">
+                        <span>องค์ประชุม (Quorum Status)</span>
+                        <span id="quorumThresholdText" class="text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">เกณฑ์ > 50% (18 คน)</span>
+                    </div>
+
+                    <div class="flex items-baseline justify-between">
+                        <span id="quorumCounter" class="text-3xl font-extrabold text-slate-900 font-mono">
+                            0 <span class="text-sm font-normal text-slate-500">/ 35</span>
+                        </span>
+                        <span id="quorumBadge" class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                            ⏳ รอการตอบรับ
+                        </span>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                        <div id="quorumProgressBar" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">ระบบปิดฟอร์มอัตโนมัติ (Deadline)</label>
-                    <input type="datetime-local" id="genDeadline" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-            </div>
-            <button onclick="generateLink()" class="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium shadow hover:bg-black">สร้างลิงก์</button>
-            <div id="resultLinkBox" class="hidden mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between gap-2">
-                <input type="text" id="resultLink" class="w-full bg-transparent text-xs text-gray-600 outline-none" readonly>
-                <button onclick="copyLink()" class="shrink-0 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-emerald-700">คัดลอก</button>
             </div>
         </div>
 
-        <!-- รายละเอียดการประชุมที่อ่านจาก URL -->
-        <div id="meetingInfoBox" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 class="text-xl font-bold text-gray-900" id="displayTitle">ไม่มีการระบุการประชุม</h2>
-            <p class="text-gray-600 mt-2 text-sm">📅 กำหนดการ: <span id="displayDateText" class="font-medium">-</span></p>
-            <p class="text-rose-600 mt-1 text-sm">⏳ ปิดรับคำตอบ: <span id="displayDeadline" class="font-medium">-</span></p>
+        <!-- ================= STATS SUMMARY CARDS (LIGHT MODE) ================= -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
+            <div class="un-card rounded-xl p-4 border-l-4 border-l-emerald-500 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Onsite</p>
+                    <h3 id="countOnsite" class="text-2xl font-bold text-emerald-700 mt-1 font-mono">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold border border-emerald-200">
+                    📍
+                </div>
+            </div>
+            <div class="un-card rounded-xl p-4 border-l-4 border-l-sky-500 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Online</p>
+                    <h3 id="countOnline" class="text-2xl font-bold text-sky-700 mt-1 font-mono">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg font-bold border border-sky-200">
+                    💻
+                </div>
+            </div>
+            <div class="un-card rounded-xl p-4 border-l-4 border-l-rose-500 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ขอลาประชุม</p>
+                    <h3 id="countLeave" class="text-2xl font-bold text-rose-700 mt-1 font-mono">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg font-bold border border-rose-200">
+                    ✉️
+                </div>
+            </div>
+            <div class="un-card rounded-xl p-4 border-l-4 border-l-amber-500 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เสนอญัตติ</p>
+                    <h3 id="countMotion" class="text-2xl font-bold text-amber-700 mt-1 font-mono">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg font-bold border border-amber-200">
+                    📌
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <!-- ส่วนฟอร์มกรอกข้อมูล -->
-            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit relative">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">✍️ แบบฟอร์มยืนยันตัวตน</h2>
-                
-                <!-- กล่องข้อความปิดฟอร์ม -->
-                <div id="closedOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-6 z-10">
-                    <span class="text-4xl mb-2">🔒</span>
-                    <h3 class="text-lg font-bold text-rose-600">ฟอร์มหมดอายุแล้ว</h3>
-                    <p class="text-xs text-gray-500 text-center mt-1">เลยกำหนดเวลาปิดรับคำตอบสำหรับการประชุมนี้แล้ว</p>
+        <!-- ================= MAIN CONTENT GRID (FORM & DASHBOARD) ================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: FORM (5 cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="un-card rounded-2xl p-6 relative no-print">
+                    
+                    <!-- Form Closed Overlay -->
+                    <div id="closedOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 z-20 text-center space-y-3">
+                        <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center border border-rose-200 text-3xl">
+                            🔒
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">ปิดการรับคำตอบแล้ว</h3>
+                        <p class="text-xs text-slate-600 max-w-xs">
+                            การประชุมนี้ได้เลยกำหนดเวลาปิดรับคำตอบตามที่ฝ่ายเลขาฯ ได้กำหนดไว้
+                        </p>
+                        <span class="text-[11px] text-slate-700 font-mono bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300">
+                            หากจำเป็นต้องแก้ไขข้อมูล กรุณาติดต่อฝ่ายเลขาฯ
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            แบบฟอร์มยืนยันตัวตนสมาชิก
+                        </h2>
+                        <span class="text-xs text-rose-600 font-semibold">* จำเป็นต้องระบุ</span>
+                    </div>
+
+                    <form id="mainForm" onsubmit="submitForm(event)" class="space-y-4">
+                        <!-- Member selection -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Select Member / เลือกรายชื่อสมาชิก *
+                            </label>
+                            <select id="fName" required class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer">
+                                <option value="" class="text-slate-400">-- กรุณาเลือกรายชื่อ --</option>
+                            </select>
+                        </div>
+
+                        <!-- Attendance Status -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                Attendance Status / สถานะการเข้าร่วม *
+                            </label>
+                            <select id="fStatus" required onchange="toggleFields()" class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer">
+                                <option value="" class="text-slate-400">-- เลือกสถานะการเข้าร่วม --</option>
+                                <option value="Onsite" class="text-emerald-700">📍 เข้าร่วมแบบ Onsite (ณ ห้องประชุม)</option>
+                                <option value="Online" class="text-sky-700">💻 เข้าร่วมแบบ Online (สื่ออิเล็กทรอนิกส์)</option>
+                                <option value="ลาประชุม" class="text-rose-700">❌ ขอลาประชุม (Absent)</option>
+                            </select>
+                        </div>
+
+                        <!-- Absence Reason (Conditional) -->
+                        <div id="boxReason" class="hidden transition-all duration-300">
+                            <label class="block text-xs font-semibold text-rose-700 mb-1.5">
+                                เหตุผลการลาประชุม (ตามระเบียบสภาฯ) *
+                            </label>
+                            <textarea id="fReason" rows="2" class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm border-rose-300 focus:border-rose-600 placeholder-slate-400" placeholder="ระบุเหตุผลในการลาประชุมตามระเบียบข้อบังคับ..."></textarea>
+                        </div>
+
+                        <!-- Motion Proposal Selector -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                                ต้องการเสนอญัตติเพื่ออภิปรายหรือไม่ *
+                            </label>
+                            <select id="fHasMotion" required onchange="toggleFields()" class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer">
+                                <option value="ไม่มี" class="text-slate-700">ไม่มีญัตติเสนอ (No Motion)</option>
+                                <option value="มี" class="text-amber-700 font-semibold">มีญัตติต้องการเสนอ (Submit Motion)</option>
+                            </select>
+                        </div>
+
+                        <!-- Motion Detail (Conditional) -->
+                        <div id="boxMotion" class="hidden transition-all duration-300">
+                            <label class="block text-xs font-semibold text-amber-800 mb-1.5">
+                                หัวข้อและรายละเอียดญัตติที่ต้องการเสนอ *
+                            </label>
+                            <textarea id="fMotionDetail" rows="3" class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm border-amber-300 focus:border-amber-600 placeholder-slate-400" placeholder="ระบุหัวข้อญัตติ เหตุผลความจำเป็น และรายละเอียดโดยสังเขป..."></textarea>
+                        </div>
+
+                        <!-- Additional Remarks -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                                หมายเหตุเพิ่มเติม (ถ้ามี)
+                            </label>
+                            <textarea id="fRemark" rows="1" class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm placeholder-slate-400" placeholder="เช่น ขอเข้าสายเนื่องจากติดภารกิจ..."></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="btnSubmit" class="w-full mt-2 bg-blue-900 hover:bg-slate-900 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border border-blue-800">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span id="btnText">ยืนยันและส่งข้อมูล</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: LIVE DASHBOARD & AGENDA LIST (7 cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="un-card rounded-2xl p-6 min-h-[520px] flex flex-col">
+                    
+                    <!-- Dashboard Header & Search/Filter Controls -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                รายการตอบรับและวาระการประชุม (Live Feed)
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">อัปเดตข้อมูลระบบเรียลไทม์ทุก 3 วินาที</p>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="relative w-full sm:w-56 no-print">
+                            <input type="text" id="searchInput" onkeyup="filterDashboard()" placeholder="ค้นหารายชื่อ/ญัตติ..." class="w-full un-input pl-9 pr-3 py-1.5 rounded-xl text-xs outline-none">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex items-center gap-1.5 py-3 overflow-x-auto text-xs no-print">
+                        <button onclick="setTabFilter('ALL')" id="tabALL" class="tab-btn px-3 py-1.5 rounded-lg bg-blue-900 text-white font-bold transition shrink-0 cursor-pointer shadow-2xs">
+                            ทั้งหมด
+                        </button>
+                        <button onclick="setTabFilter('Onsite')" id="tabOnsite" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition shrink-0 cursor-pointer">
+                            📍 Onsite
+                        </button>
+                        <button onclick="setTabFilter('Online')" id="tabOnline" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition shrink-0 cursor-pointer">
+                            💻 Online
+                        </button>
+                        <button onclick="setTabFilter('ลาประชุม')" id="tabLeave" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition shrink-0 cursor-pointer">
+                            ❌ ลาประชุม
+                        </button>
+                        <button onclick="setTabFilter('Motion')" id="tabMotion" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition shrink-0 cursor-pointer">
+                            📌 มีญัตติ
+                        </button>
+                    </div>
+
+                    <!-- Dashboard List Container -->
+                    <div id="dataList" class="space-y-3 overflow-y-auto max-h-[460px] pr-1 mt-1 flex-1">
+                        <div class="flex flex-col items-center justify-center py-12 text-slate-400 space-y-2">
+                            <svg class="w-8 h-8 animate-spin text-sky-700" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <p class="text-xs font-medium text-slate-500">กำลังเชื่อมต่อและโหลดข้อมูลล่าสุด...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="mt-8 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 no-print">
+        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting และจัดการระเบียบวาระการประชุม (International Standard Design)</p>
+    </footer>
+
+    <!-- ================= SECRETARY ADMIN MODAL ================= -->
+    <div id="adminModal" class="fixed inset-0 un-modal-backdrop z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-5 relative">
+            <button onclick="toggleAdminModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-200 font-bold">
+                    🔗
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">เครื่องมือฝ่ายเลขาธิการ: ออกลิงก์การประชุม</h3>
+                    <p class="text-xs text-slate-500">สร้าง URL สำหรับให้สมาชิกใช้ลงทะเบียนเข้าร่วมและเสนอญัตติ</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Preset Quick Buttons -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">แม่แบบชื่อการประชุมด่วน (Presets)</label>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button type="button" onclick="setPresetTitle('การประชุมสามัญสภานักศึกษา ประจำเดือนตุลาคม')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+                            สามัญประจำเดือน
+                        </button>
+                        <button type="button" onclick="setPresetTitle('การประชุมวิสามัญสภานักศึกษา ครั้งที่ 1/2569')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+                            วิสามัญ 1/2569
+                        </button>
+                        <button type="button" onclick="setPresetTitle('การประชุมคณะกรรมการบริหารสภานักศึกษา')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+                            ประชุมคณะกรรมการ
+                        </button>
+                    </div>
                 </div>
 
-                <form id="mainForm" onsubmit="submitForm(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">เลือกรายชื่อของคุณ *</label>
-                        <select id="fName" required class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="">-- กรุณาเลือก --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">สถานะการเข้าร่วม *</label>
-                        <select id="fStatus" required onchange="toggleFields()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="">-- เลือกสถานะ --</option>
-                            <option value="Onsite">Onsite</option>
-                            <option value="Online">Online</option>
-                            <option value="ลาประชุม">ลาประชุม</option>
-                        </select>
-                    </div>
-                    <div id="boxReason" class="hidden">
-                        <label class="block text-xs font-medium text-red-600 mb-1">เหตุผลการลา (ตามระเบียบ) *</label>
-                        <textarea id="fReason" rows="2" class="w-full px-3 py-2 text-sm rounded-xl border border-red-300 focus:ring-2 focus:ring-red-500 outline-none" placeholder="ระบุเหตุผล..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">เสนอญัตติเพื่ออภิปราย *</label>
-                        <select id="fHasMotion" required onchange="toggleFields()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="ไม่มี">ไม่มี</option>
-                            <option value="มี">มี</option>
-                        </select>
-                    </div>
-                    <div id="boxMotion" class="hidden">
-                        <label class="block text-xs font-medium text-indigo-700 mb-1">รายละเอียดญัตติ *</label>
-                        <textarea id="fMotionDetail" rows="2" class="w-full px-3 py-2 text-sm rounded-xl border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ระบุรายละเอียด..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">หมายเหตุ (ถ้ามี)</label>
-                        <textarea id="fRemark" rows="1" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-                    </div>
-                    <button type="submit" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl text-sm shadow transition">
-                        ส่งข้อมูล
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ/ครั้งที่การประชุม *</label>
+                    <input type="text" id="genTitle" class="w-full un-input px-3.5 py-2 rounded-xl text-sm" placeholder="เช่น การประชุมสามัญสภานักศึกษา ครั้งที่ 5/2569">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">กำหนดการประชุม (ข้อความแสดงผล) *</label>
+                    <input type="text" id="genDateText" class="w-full un-input px-3.5 py-2 rounded-xl text-sm" placeholder="เช่น 7 ต.ค. 69 เวลา 17.00-21.00 น. ณ ห้องประชุมสภาฯ">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">เวลาปิดระบบอัตโนมัติ (Deadline) *</label>
+                    <input type="datetime-local" id="genDeadline" class="w-full un-input px-3.5 py-2 rounded-xl text-sm">
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" onclick="generateLink()" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-bold py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer">
+                        ⚡ สร้างลิงก์การประชุม
                     </button>
-                </form>
-            </div>
+                </div>
 
-            <!-- ส่วน Dashboard แสดงผล Live -->
-            <div class="md:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-gray-900">📋 รายการตอบรับและวาระ (Live)</h2>
-                    </div>
-                    <div id="dataList" class="space-y-3 max-h-96 overflow-y-auto pr-2 text-sm">
-                        <p class="text-gray-400 text-center py-4">กำลังโหลดข้อมูล...</p>
+                <!-- Result Box -->
+                <div id="resultLinkBox" class="hidden mt-3 p-3 bg-slate-50 border border-slate-300 rounded-xl space-y-2">
+                    <label class="block text-[11px] font-semibold text-slate-700">ลิงก์การประชุมที่สร้างเสร็จแล้ว:</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="resultLink" class="w-full bg-white text-xs text-sky-800 px-3 py-2 rounded-lg outline-none font-mono border border-slate-300" readonly>
+                        <button type="button" onclick="copyLink()" class="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
+                            📋 คัดลอก
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ================= APPLICATION JAVASCRIPT ================= -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxh9UoPXpDoZ7WrPCzYUqV99GGpDnmru1NFXVRdfCcWQaUYn4OarMa_4QZHnXEvhuat/exec";
         
         let currentMeetingTitle = "";
         let deadlineTime = null;
+        let cachedData = [];
+        let activeTab = "ALL";
 
+        // Member list (35 members)
         const membersList = [
-            "1. ทรัพย์ศิริ โสภารัตนากูล - คณะมนุษยศาสตร์", "2. ภาคิไนย เอี่ยมอำไพ - คณะมนุษยศาสตร์", "3. วัชรายุทธ ซึมทราย - คณะศึกษาศาสตร์",
-            "4. พันสริตา มรรควิวรรธน์ - คณะวิจิตรศิลป์", "5. แทนคุณ จันทร์ลิ้ม - คณะสังคมศาสตร์", "6. โสภา อุษณีย์วิสุทธิ์ - คณะสังคมศาสตร์",
-            "7. นรธีร์ บุญเทพ - คณะวิทยาศาสตร์", "8. ศุภกฤต พรหมมา - คณะวิทยาศาสตร์", "9. ฉัตรพิชัย แซ่เตีย - คณะวิศวกรรมศาสตร์",
-            "10. ณฐพร มีพาด - คณะวิศวกรรมศาสตร์", "11. ฟิสิกส์ สุริยะไชย - คณะเกษตรศาสตร์", "12. ตุลยวัฒน์ ฉางวางปราง - คณะเกษตรศาสตร์",
-            "13. ชลิต วีรกุลวัฒนา - คณะทันตแพทยศาสตร์", "14. นัทธมน ทองผุด - คณะทันตแพทยศาสตร์", "15. สุกฤษฎิ์ พิศพรรณ์ - คณะเภสัชศาสตร์",
-            "16. ตรีบูรณ์ ธรรมชัย - คณะเทคนิคการแพทย์", "17. อภิญญา อินทร - คณะพยาบาลศาสตร์", "18. ณัฐณชา ทาตั๋น - คณะพยาบาลศาสตร์",
-            "19. กัลยกร สิงห์คำ - คณะอุตสาหกรรมเกษตร", "20. ณัฐริกา สุันกี้ - คณะสัตวแพทยศาสตร์", "21. ธิตยา เสนเคน - คณะสัตวแพทยศาสตร์",
-            "22. วิภาวรรณ อัยยะกา - คณะบริหารธุรกิจ", "23. ชาญวิทย์ แซ่ขู้ - คณะเศรษฐศาสตร์", "24. เบญญาภา ก้องออนตา - คณะเศรษฐศาสตร์",
-            "25. มหินธารา สินธุรัตน์ - คณะสถาปัตยกรรมศาสตร์", "26. ธนภัทร ศรีบุญมี - คณะสถาปัตยกรรมศาสตร์", "27. ฐาณิชญาณ์ รักษาแก้ว - คณะการสื่อสารมวลชน",
-            "28. วรรณกร ชูเฉลิม - คณะการสื่อสารมวลชน", "29. สรชัช มณีเกี่ยง - คณะรัฐศาสตร์ฯ", "30. ธเนศพล อุ่นทอง - คณะรัฐศาสตร์ฯ",
-            "31. ภราดร เสมอใจ - คณะนิติศาสตร์", "32. ศุภณัฏฐ์ คำตั๋น - คณะนิติศาสตร์", "33. ศุภณัฐ สุรินจักร์ - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี",
-            "34. ภูรินท์ คำปันบุตร - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี", "35. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
+            "1. ทรัพย์ศิริ โสภารัตนากูล - คณะมนุษยศาสตร์", 
+            "2. ภาคิไนย เอี่ยมอำไพ - คณะมนุษยศาสตร์", 
+            "3. วัชรายุทธ ซึมทราย - คณะศึกษาศาสตร์",
+            "4. พันสริตา มรรควิวรรธน์ - คณะวิจิตรศิลป์", 
+            "5. แทนคุณ จันทร์ลิ้ม - คณะสังคมศาสตร์", 
+            "6. โสภา อุษณีย์วิสุทธิ์ - คณะสังคมศาสตร์",
+            "7. นรธีร์ บุญเทพ - คณะวิทยาศาสตร์", 
+            "8. ศุภกฤต พรหมมา - คณะวิทยาศาสตร์", 
+            "9. ฉัตรพิชัย แซ่เตีย - คณะวิศวกรรมศาสตร์",
+            "10. ณฐพร มีพาด - คณะวิศวกรรมศาสตร์", 
+            "11. ฟิสิกส์ สุริยะไชย - คณะเกษตรศาสตร์", 
+            "12. ตุลยวัฒน์ ฉางวางปราง - คณะเกษตรศาสตร์",
+            "13. ชลิต วีรกุลวัฒนา - คณะทันตแพทยศาสตร์", 
+            "14. นัทธมน ทองผุด - คณะทันตแพทยศาสตร์", 
+            "15. สุกฤษฎิ์ พิศพรรณ์ - คณะเภสัชศาสตร์",
+            "16. ตรีบูรณ์ ธรรมชัย - คณะเทคนิคการแพทย์", 
+            "17. อภิญญา อินทร - คณะพยาบาลศาสตร์", 
+            "18. ณัฐณชา ทาตั๋น - คณะพยาบาลศาสตร์",
+            "19. กัลยกร สิงห์คำ - คณะอุตสาหกรรมเกษตร", 
+            "20. ณัฐริกา สุันกี้ - คณะสัตวแพทยศาสตร์", 
+            "21. ธิตยา เสนเคน - คณะสัตวแพทยศาสตร์",
+            "22. วิภาวรรณ อัยยะกา - คณะบริหารธุรกิจ", 
+            "23. ชาญวิทย์ แซ่ขู้ - คณะเศรษฐศาสตร์", 
+            "24. เบญญาภา ก้องออนตา - คณะเศรษฐศาสตร์",
+            "25. มหินธารา สินธุรัตน์ - คณะสถาปัตยกรรมศาสตร์", 
+            "26. ธนภัทร ศรีบุญมี - คณะสถาปัตยกรรมศาสตร์", 
+            "27. ฐาณิชญาณ์ รักษาแก้ว - คณะการสื่อสารมวลชน",
+            "28. วรรณกร ชูเฉลิม - คณะการสื่อสารมวลชน", 
+            "29. สรชัช มณีเกี่ยง - คณะรัฐศาสตร์ฯ", 
+            "30. ธเนศพล อุ่นทอง - คณะรัฐศาสตร์ฯ",
+            "31. ภราดร เสมอใจ - คณะนิติศาสตร์", 
+            "32. ศุภณัฏฐ์ คำตั๋น - คณะนิติศาสตร์", 
+            "33. ศุภณัฐ สุรินจักร์ - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี",
+            "34. ภูรินท์ คำปันบุตร - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี", 
+            "35. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
         ];
 
         window.onload = function() {
-            // ใส่รายชื่อ
+            // Populate Member Dropdown
             const select = document.getElementById('fName');
             membersList.forEach(name => {
                 let opt = document.createElement('option');
-                opt.value = name; opt.textContent = name;
+                opt.value = name; 
+                opt.textContent = name;
+                opt.className = "bg-white text-slate-900";
                 select.appendChild(opt);
             });
 
-            // นาฬิกาแบบ Real-time
-            setInterval(() => {
-                const now = new Date();
-                document.getElementById('realTimeClock').innerText = now.toLocaleString('th-TH');
-                
-                // เช็คเวลาปิดฟอร์ม
-                if (deadlineTime && now > deadlineTime) {
-                    document.getElementById('closedOverlay').classList.remove('hidden');
-                }
-            }, 1000);
+            // Real-time Clock & Deadline Timer Interval
+            setInterval(updateClocks, 1000);
+            updateClocks();
 
-            // อ่าน URL Parameters
+            // Read URL Parameters
             const urlParams = new URLSearchParams(window.location.search);
             currentMeetingTitle = urlParams.get('title') || "ไม่มีการระบุการประชุม (รอเลขาออกลิงก์)";
-            const dateText = urlParams.get('dateText') || "ไม่ระบุ";
+            const dateText = urlParams.get('dateText') || "ไม่ระบุวันเวลา";
             const deadlineRaw = urlParams.get('deadline');
 
             document.getElementById('displayTitle').innerText = currentMeetingTitle;
@@ -174,21 +558,62 @@
 
             if (deadlineRaw) {
                 deadlineTime = new Date(deadlineRaw);
-                document.getElementById('displayDeadline').innerText = deadlineTime.toLocaleString('th-TH');
+                document.getElementById('displayDeadline').innerText = deadlineTime.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
             } else {
                 document.getElementById('displayDeadline').innerText = "ไม่ระบุ";
+                document.getElementById('countdownText').innerText = "ไม่ได้ตั้งเวลาปิดรับคำตอบ";
             }
 
             fetchData();
             setInterval(fetchData, 3000);
+        };
+
+        function updateClocks() {
+            const now = new Date();
+            // Thai Locale formatted clock
+            document.getElementById('realTimeClock').innerText = now.toLocaleString('th-TH', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+
+            // Check Deadline
+            if (deadlineTime) {
+                const diff = deadlineTime - now;
+                if (diff <= 0) {
+                    document.getElementById('closedOverlay').classList.remove('hidden');
+                    document.getElementById('countdownText').innerText = "ปิดรับคำตอบแล้ว";
+                    document.getElementById('countdownBadge').className = "px-3 py-1 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1";
+                } else {
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    document.getElementById('countdownText').innerText = `เหลือเวลา ${hours.toString().padStart(2, '0')} ชม. ${minutes.toString().padStart(2, '0')} นาที ${seconds.toString().padStart(2, '0')} วินาที`;
+                }
+            }
+        }
+
+        function toggleAdminModal(show) {
+            const modal = document.getElementById('adminModal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function setPresetTitle(title) {
+            document.getElementById('genTitle').value = title;
         }
 
         function generateLink() {
-            const title = document.getElementById('genTitle').value;
-            const dateText = document.getElementById('genDateText').value;
+            const title = document.getElementById('genTitle').value.trim();
+            const dateText = document.getElementById('genDateText').value.trim();
             const deadline = document.getElementById('genDeadline').value;
             
-            if(!title || !deadline) { alert("กรุณากรอกชื่อการประชุมและเวลาปิดฟอร์มให้ครบครับ"); return; }
+            if (!title || !deadline) { 
+                showToast("กรุณากรอกชื่อการประชุมและเวลาปิดฟอร์มให้ครบถ้วน", "warning"); 
+                return; 
+            }
 
             const baseUrl = window.location.href.split('?')[0];
             const params = new URLSearchParams({ title: title, dateText: dateText, deadline: deadline });
@@ -196,12 +621,15 @@
             
             document.getElementById('resultLink').value = newLink;
             document.getElementById('resultLinkBox').classList.remove('hidden');
+            showToast("สร้างลิงก์การประชุมสำเร็จ!", "success");
         }
 
         function copyLink() {
             const copyText = document.getElementById('resultLink');
-            copyText.select(); document.execCommand("copy");
-            alert("คัดลอกลิงก์เรียบร้อยแล้ว ส่งให้สมาชิกได้เลยครับ!");
+            if (!copyText.value) return;
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            showToast("คัดลอกลิงก์เรียบร้อยแล้ว ส่งให้สมาชิกได้เลย!", "success");
         }
 
         function toggleFields() {
@@ -210,23 +638,37 @@
             
             const boxReason = document.getElementById('boxReason');
             const inpReason = document.getElementById('fReason');
-            if(status === 'ลาประชุม') { boxReason.classList.remove('hidden'); inpReason.required = true; } 
-            else { boxReason.classList.add('hidden'); inpReason.required = false; inpReason.value = ''; }
+            if (status === 'ลาประชุม') { 
+                boxReason.classList.remove('hidden'); 
+                inpReason.required = true; 
+            } else { 
+                boxReason.classList.add('hidden'); 
+                inpReason.required = false; 
+                inpReason.value = ''; 
+            }
 
             const boxMotion = document.getElementById('boxMotion');
             const inpMotion = document.getElementById('fMotionDetail');
-            if(hasMotion === 'มี') { boxMotion.classList.remove('hidden'); inpMotion.required = true; } 
-            else { boxMotion.classList.add('hidden'); inpMotion.required = false; inpMotion.value = ''; }
+            if (hasMotion === 'มี') { 
+                boxMotion.classList.remove('hidden'); 
+                inpMotion.required = true; 
+            } else { 
+                boxMotion.classList.add('hidden'); 
+                inpMotion.required = false; 
+                inpMotion.value = ''; 
+            }
         }
 
         function submitForm(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.disabled = true; btn.innerText = "กำลังส่งข้อมูล...";
+            const btnText = document.getElementById('btnText');
+            btn.disabled = true; 
+            btnText.innerText = "กำลังส่งข้อมูล...";
 
             const params = new URLSearchParams({
                 action: 'insert',
-                meetingTitle: currentMeetingTitle, // แนบชื่อการประชุมไปด้วย
+                meetingTitle: currentMeetingTitle,
                 name: document.getElementById('fName').value,
                 status: document.getElementById('fStatus').value,
                 reason: document.getElementById('fReason').value,
@@ -238,49 +680,191 @@
             fetch(API_URL + '?' + params.toString())
             .then(res => res.json())
             .then(data => {
-                alert('ส่งข้อมูลสำเร็จ!');
+                showToast("ส่งข้อมูลยืนยันตัวตนสำเร็จแล้ว!", "success");
                 document.getElementById('mainForm').reset();
-                toggleFields(); fetchData();
-                btn.disabled = false; btn.innerText = "ส่งข้อมูล";
+                toggleFields(); 
+                fetchData();
+                btn.disabled = false; 
+                btnText.innerText = "ยืนยันและส่งข้อมูล";
             })
-            .catch(err => { alert('เกิดข้อผิดพลาด'); btn.disabled = false; btn.innerText = "ส่งข้อมูล"; });
+            .catch(err => { 
+                showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ ลองอีกครั้ง", "error"); 
+                btn.disabled = false; 
+                btnText.innerText = "ยืนยันและส่งข้อมูล"; 
+            });
         }
 
         function fetchData() {
-            if(!API_URL || API_URL.includes("ใส่_WEB_APP_URL")) return;
-            fetch(API_URL).then(res => res.json()).then(data => {
-                let html = '';
-                // คัดกรองข้อมูลให้โชว์เฉพาะคนของ "การประชุมครั้งนี้" เท่านั้น
-                let currentMeetingData = data.filter(item => item.meetingTitle === currentMeetingTitle);
+            if (!API_URL || API_URL.includes("ใส่_WEB_APP_URL")) return;
+            
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                // Filter items specifically for the current meeting title
+                cachedData = data.filter(item => item.meetingTitle === currentMeetingTitle);
+                updateStatsAndQuorum(cachedData);
+                renderDashboard();
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+            });
+        }
 
-                if(currentMeetingData.length === 0) {
-                    document.getElementById('dataList').innerHTML = `<p class="text-sm text-gray-400 text-center py-4">ยังไม่มีข้อมูลสำหรับการประชุมนี้</p>`; return;
+        function updateStatsAndQuorum(meetingData) {
+            const onsiteCount = meetingData.filter(i => i.status === 'Onsite').length;
+            const onlineCount = meetingData.filter(i => i.status === 'Online').length;
+            const leaveCount = meetingData.filter(i => i.status === 'ลาประชุม').length;
+            const motionCount = meetingData.filter(i => i.hasMotion === 'มี').length;
+            const totalResponded = meetingData.length;
+
+            document.getElementById('countOnsite').innerText = onsiteCount;
+            document.getElementById('countOnline').innerText = onlineCount;
+            document.getElementById('countLeave').innerText = leaveCount;
+            document.getElementById('countMotion').innerText = motionCount;
+
+            // Quorum Logic (Total 35 members, Quorum > 50% = 18 members)
+            const quorumThreshold = 18;
+            document.getElementById('quorumCounter').innerHTML = `${totalResponded} <span class="text-sm font-normal text-slate-500">/ 35</span>`;
+            
+            const percentage = Math.min(Math.round((totalResponded / 35) * 100), 100);
+            document.getElementById('quorumProgressBar').style.width = `${percentage}%`;
+
+            const quorumBadge = document.getElementById('quorumBadge');
+            if (totalResponded >= quorumThreshold) {
+                quorumBadge.className = "px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                quorumBadge.innerHTML = "✅ ครบองค์ประชุมแล้ว";
+            } else {
+                const diff = quorumThreshold - totalResponded;
+                quorumBadge.className = "px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+                quorumBadge.innerHTML = `⏳ ขาดอีก ${diff} คนจะครบองค์`;
+            }
+        }
+
+        function setTabFilter(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium transition shrink-0 cursor-pointer";
+            });
+            const activeBtn = document.getElementById(`tab${tab}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn px-3 py-1.5 rounded-lg bg-blue-900 text-white font-bold transition shrink-0 cursor-pointer shadow-2xs";
+            }
+            renderDashboard();
+        }
+
+        function filterDashboard() {
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filtered = cachedData.slice().reverse(); // Show latest first
+
+            // Apply Tab Filter
+            if (activeTab === 'Onsite') filtered = filtered.filter(i => i.status === 'Onsite');
+            else if (activeTab === 'Online') filtered = filtered.filter(i => i.status === 'Online');
+            else if (activeTab === 'ลาประชุม') filtered = filtered.filter(i => i.status === 'ลาประชุม');
+            else if (activeTab === 'Motion') filtered = filtered.filter(i => i.hasMotion === 'มี');
+
+            // Apply Search Query
+            if (query) {
+                filtered = filtered.filter(i => 
+                    (i.name && i.name.toLowerCase().includes(query)) ||
+                    (i.motionDetail && i.motionDetail.toLowerCase().includes(query)) ||
+                    (i.reason && i.reason.toLowerCase().includes(query))
+                );
+            }
+
+            if (filtered.length === 0) {
+                document.getElementById('dataList').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 text-slate-400 space-y-2 border border-dashed border-slate-300 rounded-xl">
+                        <span class="text-2xl">📋</span>
+                        <p class="text-xs font-medium text-slate-500">ยังไม่มีข้อมูลการตอบรับในหมวดหมู่นี้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((item, index) => {
+                let badge = '';
+                if (item.status === 'Onsite') {
+                    badge = `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">📍 Onsite</span>`;
+                } else if (item.status === 'Online') {
+                    badge = `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">💻 Online</span>`;
+                } else if (item.status === 'ลาประชุม') {
+                    badge = `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">❌ ลาประชุม</span>`;
                 }
 
-                currentMeetingData.reverse().forEach(item => {
-                    let badge = '';
-                    if (item.status === 'Onsite') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">📍 Onsite</span>`;
-                    else if (item.status === 'Online') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">💻 Online</span>`;
-                    else if (item.status === 'ลาประชุม') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">❌ ลาประชุม</span>`;
-
-                    let reasonHtml = (item.status === 'ลาประชุม' && item.reason) ? `<p class="text-xs text-rose-600 mt-1"><strong>เหตุผล:</strong> ${item.reason}</p>` : '';
-                    let motionHtml = (item.hasMotion === 'มี' && item.motionDetail) ? `<div class="mt-2 bg-indigo-50 p-2 rounded border border-indigo-100 text-xs text-indigo-900"><strong>📌 ญัตติ:</strong> ${item.motionDetail}</div>` : '';
-                    let remarkHtml = item.remark ? `<p class="text-[10px] text-gray-500 mt-1"><strong>หมายเหตุ:</strong> ${item.remark}</p>` : '';
-
-                    html += `
-                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                            <div class="flex justify-between items-center">
-                                <p class="font-bold text-gray-900">${item.name}</p>
-                                <div class="shrink-0">${badge}</div>
-                            </div>
-                            ${reasonHtml}
-                            ${motionHtml}
-                            ${remarkHtml}
+                let reasonHtml = (item.status === 'ลาประชุม' && item.reason) 
+                    ? `<div class="mt-2 text-xs text-rose-900 bg-rose-50/80 p-2.5 rounded-xl border border-rose-200"><strong>เหตุผลการลา:</strong> ${escapeHtml(item.reason)}</div>` 
+                    : '';
+                
+                let motionHtml = (item.hasMotion === 'มี' && item.motionDetail) 
+                    ? `<div class="mt-2.5 bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs text-amber-950 space-y-1 shadow-2xs">
+                        <div class="flex items-center gap-1.5 font-bold text-amber-800">
+                            <span>📌 ญัตติที่เสนอเพื่ออภิปราย</span>
                         </div>
-                    `;
-                });
-                document.getElementById('dataList').innerHTML = html;
+                        <p class="leading-relaxed text-slate-800">${escapeHtml(item.motionDetail)}</p>
+                       </div>` 
+                    : '';
+                
+                let remarkHtml = item.remark 
+                    ? `<p class="text-[11px] text-slate-500 mt-2 italic"><strong>หมายเหตุ:</strong> ${escapeHtml(item.remark)}</p>` 
+                    : '';
+
+                html += `
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition shadow-2xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <h4 class="font-bold text-sm text-slate-900">${escapeHtml(item.name)}</h4>
+                            <div class="shrink-0">${badge}</div>
+                        </div>
+                        ${reasonHtml}
+                        ${motionHtml}
+                        ${remarkHtml}
+                    </div>
+                `;
             });
+
+            document.getElementById('dataList').innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let colorClasses = "bg-slate-900 text-white border-slate-700 shadow-lg";
+            let icon = "ℹ️";
+            
+            if (type === 'success') {
+                colorClasses = "bg-emerald-900 text-white border-emerald-700 shadow-emerald-900/20";
+                icon = "✅";
+            } else if (type === 'warning') {
+                colorClasses = "bg-amber-800 text-white border-amber-600 shadow-amber-900/20";
+                icon = "⚠️";
+            } else if (type === 'error') {
+                colorClasses = "bg-rose-900 text-white border-rose-700 shadow-rose-900/20";
+                icon = "🚨";
+            }
+
+            toast.className = `px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl flex items-center gap-2 transition-all duration-300 pointer-events-auto transform translate-y-2 opacity-0 ${colorClasses}`;
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
         }
     </script>
 </body>
