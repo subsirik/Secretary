@@ -6,7 +6,7 @@
     <title>ระบบตอบรับและจัดการการประชุม e-Meeting สภานักศึกษา</title>
     <!-- Tailwind CSS v4 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts: Prompt & Sarabun (Official UN/Thai Government Standard font feel) -->
+    <!-- Google Fonts: Prompt & Sarabun -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -206,7 +206,7 @@
             </div>
         </div>
 
-        <!-- ================= STATS SUMMARY CARDS (LIGHT MODE) ================= -->
+        <!-- ================= STATS SUMMARY CARDS ================= -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
             <div class="un-card rounded-xl p-4 border-l-4 border-l-emerald-500 flex items-center justify-between">
                 <div>
@@ -278,14 +278,15 @@
                     </div>
 
                     <form id="mainForm" onsubmit="submitForm(event)" class="space-y-4">
-                        <!-- Member selection -->
+                        <!-- Member selection (Dynamic: filtering out already responded members for this meeting) -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                            <label id="lblMemberSelect" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                 Select Member / เลือกรายชื่อสมาชิก *
                             </label>
                             <select id="fName" required class="w-full un-input px-3.5 py-2.5 rounded-xl text-sm transition cursor-pointer">
-                                <option value="" class="text-slate-400">-- กรุณาเลือกรายชื่อ --</option>
+                                <option value="" class="text-slate-400">-- กำลังโหลดรายชื่อ... --</option>
                             </select>
+                            <p class="text-[11px] text-slate-500 mt-1 italic">* รายชื่อที่ตอบรับการประชุมนี้แล้วจะถูกซ่อนจากรายการโดยอัตโนมัติ</p>
                         </div>
 
                         <!-- Attendance Status -->
@@ -533,15 +534,8 @@
         ];
 
         window.onload = function() {
-            // Populate Member Dropdown
-            const select = document.getElementById('fName');
-            membersList.forEach(name => {
-                let opt = document.createElement('option');
-                opt.value = name; 
-                opt.textContent = name;
-                opt.className = "bg-white text-slate-900";
-                select.appendChild(opt);
-            });
+            // Initial population of Member Dropdown before API data arrives
+            updateMemberDropdown([]);
 
             // Real-time Clock & Deadline Timer Interval
             setInterval(updateClocks, 1000);
@@ -661,6 +655,12 @@
 
         function submitForm(e) {
             e.preventDefault();
+            const selectName = document.getElementById('fName');
+            if (!selectName.value) {
+                showToast("กรุณาเลือกรายชื่อสมาชิกก่อนส่งข้อมูล", "warning");
+                return;
+            }
+
             const btn = document.getElementById('btnSubmit');
             const btnText = document.getElementById('btnText');
             btn.disabled = true; 
@@ -669,7 +669,7 @@
             const params = new URLSearchParams({
                 action: 'insert',
                 meetingTitle: currentMeetingTitle,
-                name: document.getElementById('fName').value,
+                name: selectName.value,
                 status: document.getElementById('fStatus').value,
                 reason: document.getElementById('fReason').value,
                 hasMotion: document.getElementById('fHasMotion').value,
@@ -703,11 +703,69 @@
                 // Filter items specifically for the current meeting title
                 cachedData = data.filter(item => item.meetingTitle === currentMeetingTitle);
                 updateStatsAndQuorum(cachedData);
+                updateMemberDropdown(cachedData);
                 renderDashboard();
             })
             .catch(err => {
                 console.error("Fetch error:", err);
             });
+        }
+
+        /**
+         * Dynamic Member Dropdown Filter:
+         * Filters out member names who have already submitted a response for `currentMeetingTitle`.
+         */
+        function updateMemberDropdown(meetingData) {
+            const select = document.getElementById('fName');
+            const label = document.getElementById('lblMemberSelect');
+            const currentValue = select.value;
+            
+            // Set of member names who already submitted for this specific meeting
+            const respondedNames = new Set(meetingData.map(item => item.name));
+            
+            // Available members who haven't submitted yet for this meeting
+            const availableMembers = membersList.filter(name => !respondedNames.has(name));
+            
+            // Clear select element
+            select.innerHTML = '';
+
+            if (availableMembers.length === 0) {
+                let opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "-- สมาชิกทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว (35/35) --";
+                opt.className = "text-slate-400 font-medium";
+                select.appendChild(opt);
+                select.disabled = true;
+                
+                if (label) {
+                    label.innerHTML = `Select Member / เลือกรายชื่อสมาชิก * <span class="text-emerald-700 font-bold ml-1">(ตอบรับครบ 35/35 คนแล้ว)</span>`;
+                }
+            } else {
+                select.disabled = false;
+                
+                let defaultOpt = document.createElement('option');
+                defaultOpt.value = "";
+                defaultOpt.textContent = `-- กรุณาเลือกรายชื่อ (คงเหลือยังไม่ลงทะเบียน ${availableMembers.length} คน) --`;
+                defaultOpt.className = "text-slate-400";
+                select.appendChild(defaultOpt);
+
+                availableMembers.forEach(name => {
+                    let opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    opt.className = "bg-white text-slate-900";
+                    select.appendChild(opt);
+                });
+
+                // Restore previously selected value if still available in list
+                if (currentValue && availableMembers.includes(currentValue)) {
+                    select.value = currentValue;
+                }
+
+                if (label) {
+                    label.innerHTML = `Select Member / เลือกรายชื่อสมาชิก * <span class="text-sky-700 font-bold ml-1">(คงเหลืออีก ${availableMembers.length} คน)</span>`;
+                }
+            }
         }
 
         function updateStatsAndQuorum(meetingData) {
