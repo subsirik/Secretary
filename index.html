@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบตอบรับ e-Meeting</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Prompt', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen p-4 sm:p-6">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header & นาฬิกา Real-time -->
+        <header class="bg-indigo-800 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold">ระบบตอบรับ e-Meeting สภานักศึกษา</h1>
+                <p class="text-indigo-200 text-sm mt-1">เวลาปัจจุบัน: <span id="realTimeClock" class="font-bold text-white tracking-wider">กำลังโหลด...</span></p>
+            </div>
+            <button onclick="document.getElementById('adminModal').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-medium border border-indigo-500 transition">
+                ⚙️ จัดการลิงก์ (เลขา)
+            </button>
+        </header>
+
+        <!-- ส่วนของเลขา (ซ่อนไว้เป็นค่าเริ่มต้น) -->
+        <div id="adminModal" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-indigo-200 space-y-4 mb-6">
+            <h2 class="font-bold text-indigo-900 text-lg">🔗 สร้างลิงก์สำหรับการประชุมใหม่</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อ/ครั้งที่การประชุม</label>
+                    <input type="text" id="genTitle" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น สามัญประจำเดือนตุลาคม">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">วัน/เวลาประชุม (ข้อความ)</label>
+                    <input type="text" id="genDateText" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="เช่น 7 ก.ย. 69 เวลา 17.00-22.00 น.">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">ระบบปิดฟอร์มอัตโนมัติ (Deadline)</label>
+                    <input type="datetime-local" id="genDeadline" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+            </div>
+            <button onclick="generateLink()" class="bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium shadow hover:bg-black">สร้างลิงก์</button>
+            <div id="resultLinkBox" class="hidden mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between gap-2">
+                <input type="text" id="resultLink" class="w-full bg-transparent text-xs text-gray-600 outline-none" readonly>
+                <button onclick="copyLink()" class="shrink-0 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-emerald-700">คัดลอก</button>
+            </div>
+        </div>
+
+        <!-- รายละเอียดการประชุมที่อ่านจาก URL -->
+        <div id="meetingInfoBox" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900" id="displayTitle">ไม่มีการระบุการประชุม</h2>
+            <p class="text-gray-600 mt-2 text-sm">📅 กำหนดการ: <span id="displayDateText" class="font-medium">-</span></p>
+            <p class="text-rose-600 mt-1 text-sm">⏳ ปิดรับคำตอบ: <span id="displayDeadline" class="font-medium">-</span></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- ส่วนฟอร์มกรอกข้อมูล -->
+            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 h-fit relative">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">✍️ แบบฟอร์มยืนยันตัวตน</h2>
+                
+                <!-- กล่องข้อความปิดฟอร์ม -->
+                <div id="closedOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-6 z-10">
+                    <span class="text-4xl mb-2">🔒</span>
+                    <h3 class="text-lg font-bold text-rose-600">ฟอร์มหมดอายุแล้ว</h3>
+                    <p class="text-xs text-gray-500 text-center mt-1">เลยกำหนดเวลาปิดรับคำตอบสำหรับการประชุมนี้แล้ว</p>
+                </div>
+
+                <form id="mainForm" onsubmit="submitForm(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">เลือกรายชื่อของคุณ *</label>
+                        <select id="fName" required class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="">-- กรุณาเลือก --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">สถานะการเข้าร่วม *</label>
+                        <select id="fStatus" required onchange="toggleFields()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="">-- เลือกสถานะ --</option>
+                            <option value="Onsite">Onsite</option>
+                            <option value="Online">Online</option>
+                            <option value="ลาประชุม">ลาประชุม</option>
+                        </select>
+                    </div>
+                    <div id="boxReason" class="hidden">
+                        <label class="block text-xs font-medium text-red-600 mb-1">เหตุผลการลา (ตามระเบียบ) *</label>
+                        <textarea id="fReason" rows="2" class="w-full px-3 py-2 text-sm rounded-xl border border-red-300 focus:ring-2 focus:ring-red-500 outline-none" placeholder="ระบุเหตุผล..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">เสนอญัตติเพื่ออภิปราย *</label>
+                        <select id="fHasMotion" required onchange="toggleFields()" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="ไม่มี">ไม่มี</option>
+                            <option value="มี">มี</option>
+                        </select>
+                    </div>
+                    <div id="boxMotion" class="hidden">
+                        <label class="block text-xs font-medium text-indigo-700 mb-1">รายละเอียดญัตติ *</label>
+                        <textarea id="fMotionDetail" rows="2" class="w-full px-3 py-2 text-sm rounded-xl border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ระบุรายละเอียด..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">หมายเหตุ (ถ้ามี)</label>
+                        <textarea id="fRemark" rows="1" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    </div>
+                    <button type="submit" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl text-sm shadow transition">
+                        ส่งข้อมูล
+                    </button>
+                </form>
+            </div>
+
+            <!-- ส่วน Dashboard แสดงผล Live -->
+            <div class="md:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-900">📋 รายการตอบรับและวาระ (Live)</h2>
+                    </div>
+                    <div id="dataList" class="space-y-3 max-h-96 overflow-y-auto pr-2 text-sm">
+                        <p class="text-gray-400 text-center py-4">กำลังโหลดข้อมูล...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxh9UoPXpDoZ7WrPCzYUqV99GGpDnmru1NFXVRdfCcWQaUYn4OarMa_4QZHnXEvhuat/exec";
+        
+        let currentMeetingTitle = "";
+        let deadlineTime = null;
+
+        const membersList = [
+            "1. ทรัพย์ศิริ โสภารัตนากูล - คณะมนุษยศาสตร์", "2. ภาคิไนย เอี่ยมอำไพ - คณะมนุษยศาสตร์", "3. วัชรายุทธ ซึมทราย - คณะศึกษาศาสตร์",
+            "4. พันสริตา มรรควิวรรธน์ - คณะวิจิตรศิลป์", "5. แทนคุณ จันทร์ลิ้ม - คณะสังคมศาสตร์", "6. โสภา อุษณีย์วิสุทธิ์ - คณะสังคมศาสตร์",
+            "7. นรธีร์ บุญเทพ - คณะวิทยาศาสตร์", "8. ศุภกฤต พรหมมา - คณะวิทยาศาสตร์", "9. ฉัตรพิชัย แซ่เตีย - คณะวิศวกรรมศาสตร์",
+            "10. ณฐพร มีพาด - คณะวิศวกรรมศาสตร์", "11. ฟิสิกส์ สุริยะไชย - คณะเกษตรศาสตร์", "12. ตุลยวัฒน์ ฉางวางปราง - คณะเกษตรศาสตร์",
+            "13. ชลิต วีรกุลวัฒนา - คณะทันตแพทยศาสตร์", "14. นัทธมน ทองผุด - คณะทันตแพทยศาสตร์", "15. สุกฤษฎิ์ พิศพรรณ์ - คณะเภสัชศาสตร์",
+            "16. ตรีบูรณ์ ธรรมชัย - คณะเทคนิคการแพทย์", "17. อภิญญา อินทร - คณะพยาบาลศาสตร์", "18. ณัฐณชา ทาตั๋น - คณะพยาบาลศาสตร์",
+            "19. กัลยกร สิงห์คำ - คณะอุตสาหกรรมเกษตร", "20. ณัฐริกา สุันกี้ - คณะสัตวแพทยศาสตร์", "21. ธิตยา เสนเคน - คณะสัตวแพทยศาสตร์",
+            "22. วิภาวรรณ อัยยะกา - คณะบริหารธุรกิจ", "23. ชาญวิทย์ แซ่ขู้ - คณะเศรษฐศาสตร์", "24. เบญญาภา ก้องออนตา - คณะเศรษฐศาสตร์",
+            "25. มหินธารา สินธุรัตน์ - คณะสถาปัตยกรรมศาสตร์", "26. ธนภัทร ศรีบุญมี - คณะสถาปัตยกรรมศาสตร์", "27. ฐาณิชญาณ์ รักษาแก้ว - คณะการสื่อสารมวลชน",
+            "28. วรรณกร ชูเฉลิม - คณะการสื่อสารมวลชน", "29. สรชัช มณีเกี่ยง - คณะรัฐศาสตร์ฯ", "30. ธเนศพล อุ่นทอง - คณะรัฐศาสตร์ฯ",
+            "31. ภราดร เสมอใจ - คณะนิติศาสตร์", "32. ศุภณัฏฐ์ คำตั๋น - คณะนิติศาสตร์", "33. ศุภณัฐ สุรินจักร์ - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี",
+            "34. ภูรินท์ คำปันบุตร - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี", "35. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
+        ];
+
+        window.onload = function() {
+            // ใส่รายชื่อ
+            const select = document.getElementById('fName');
+            membersList.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                select.appendChild(opt);
+            });
+
+            // นาฬิกาแบบ Real-time
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('realTimeClock').innerText = now.toLocaleString('th-TH');
+                
+                // เช็คเวลาปิดฟอร์ม
+                if (deadlineTime && now > deadlineTime) {
+                    document.getElementById('closedOverlay').classList.remove('hidden');
+                }
+            }, 1000);
+
+            // อ่าน URL Parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            currentMeetingTitle = urlParams.get('title') || "ไม่มีการระบุการประชุม (รอเลขาออกลิงก์)";
+            const dateText = urlParams.get('dateText') || "ไม่ระบุ";
+            const deadlineRaw = urlParams.get('deadline');
+
+            document.getElementById('displayTitle').innerText = currentMeetingTitle;
+            document.getElementById('displayDateText').innerText = dateText;
+
+            if (deadlineRaw) {
+                deadlineTime = new Date(deadlineRaw);
+                document.getElementById('displayDeadline').innerText = deadlineTime.toLocaleString('th-TH');
+            } else {
+                document.getElementById('displayDeadline').innerText = "ไม่ระบุ";
+            }
+
+            fetchData();
+            setInterval(fetchData, 10000);
+        }
+
+        function generateLink() {
+            const title = document.getElementById('genTitle').value;
+            const dateText = document.getElementById('genDateText').value;
+            const deadline = document.getElementById('genDeadline').value;
+            
+            if(!title || !deadline) { alert("กรุณากรอกชื่อการประชุมและเวลาปิดฟอร์มให้ครบครับ"); return; }
+
+            const baseUrl = window.location.href.split('?')[0];
+            const params = new URLSearchParams({ title: title, dateText: dateText, deadline: deadline });
+            const newLink = baseUrl + '?' + params.toString();
+            
+            document.getElementById('resultLink').value = newLink;
+            document.getElementById('resultLinkBox').classList.remove('hidden');
+        }
+
+        function copyLink() {
+            const copyText = document.getElementById('resultLink');
+            copyText.select(); document.execCommand("copy");
+            alert("คัดลอกลิงก์เรียบร้อยแล้ว ส่งให้สมาชิกได้เลยครับ!");
+        }
+
+        function toggleFields() {
+            const status = document.getElementById('fStatus').value;
+            const hasMotion = document.getElementById('fHasMotion').value;
+            
+            const boxReason = document.getElementById('boxReason');
+            const inpReason = document.getElementById('fReason');
+            if(status === 'ลาประชุม') { boxReason.classList.remove('hidden'); inpReason.required = true; } 
+            else { boxReason.classList.add('hidden'); inpReason.required = false; inpReason.value = ''; }
+
+            const boxMotion = document.getElementById('boxMotion');
+            const inpMotion = document.getElementById('fMotionDetail');
+            if(hasMotion === 'มี') { boxMotion.classList.remove('hidden'); inpMotion.required = true; } 
+            else { boxMotion.classList.add('hidden'); inpMotion.required = false; inpMotion.value = ''; }
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true; btn.innerText = "กำลังส่งข้อมูล...";
+
+            const params = new URLSearchParams({
+                action: 'insert',
+                meetingTitle: currentMeetingTitle, // แนบชื่อการประชุมไปด้วย
+                name: document.getElementById('fName').value,
+                status: document.getElementById('fStatus').value,
+                reason: document.getElementById('fReason').value,
+                hasMotion: document.getElementById('fHasMotion').value,
+                motionDetail: document.getElementById('fMotionDetail').value,
+                remark: document.getElementById('fRemark').value
+            });
+
+            fetch(API_URL + '?' + params.toString())
+            .then(res => res.json())
+            .then(data => {
+                alert('ส่งข้อมูลสำเร็จ!');
+                document.getElementById('mainForm').reset();
+                toggleFields(); fetchData();
+                btn.disabled = false; btn.innerText = "ส่งข้อมูล";
+            })
+            .catch(err => { alert('เกิดข้อผิดพลาด'); btn.disabled = false; btn.innerText = "ส่งข้อมูล"; });
+        }
+
+        function fetchData() {
+            if(!API_URL || API_URL.includes("ใส่_WEB_APP_URL")) return;
+            fetch(API_URL).then(res => res.json()).then(data => {
+                let html = '';
+                // คัดกรองข้อมูลให้โชว์เฉพาะคนของ "การประชุมครั้งนี้" เท่านั้น
+                let currentMeetingData = data.filter(item => item.meetingTitle === currentMeetingTitle);
+
+                if(currentMeetingData.length === 0) {
+                    document.getElementById('dataList').innerHTML = `<p class="text-sm text-gray-400 text-center py-4">ยังไม่มีข้อมูลสำหรับการประชุมนี้</p>`; return;
+                }
+
+                currentMeetingData.reverse().forEach(item => {
+                    let badge = '';
+                    if (item.status === 'Onsite') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">📍 Onsite</span>`;
+                    else if (item.status === 'Online') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">💻 Online</span>`;
+                    else if (item.status === 'ลาประชุม') badge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">❌ ลาประชุม</span>`;
+
+                    let reasonHtml = (item.status === 'ลาประชุม' && item.reason) ? `<p class="text-xs text-rose-600 mt-1"><strong>เหตุผล:</strong> ${item.reason}</p>` : '';
+                    let motionHtml = (item.hasMotion === 'มี' && item.motionDetail) ? `<div class="mt-2 bg-indigo-50 p-2 rounded border border-indigo-100 text-xs text-indigo-900"><strong>📌 ญัตติ:</strong> ${item.motionDetail}</div>` : '';
+                    let remarkHtml = item.remark ? `<p class="text-[10px] text-gray-500 mt-1"><strong>หมายเหตุ:</strong> ${item.remark}</p>` : '';
+
+                    html += `
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <p class="font-bold text-gray-900">${item.name}</p>
+                                <div class="shrink-0">${badge}</div>
+                            </div>
+                            ${reasonHtml}
+                            ${motionHtml}
+                            ${remarkHtml}
+                        </div>
+                    `;
+                });
+                document.getElementById('dataList').innerHTML = html;
+            });
+        }
+    </script>
+</body>
+</html>
