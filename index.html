@@ -186,12 +186,12 @@
                 <div class="w-full lg:w-72 bg-gradient-to-br from-slate-50 to-blue-50/40 p-4.5 rounded-xl border border-slate-200 space-y-3 shrink-0 shadow-2xs">
                     <div class="flex justify-between items-center text-xs text-slate-600 font-medium">
                         <span>องค์ประชุม (Quorum Status)</span>
-                        <span id="quorumThresholdText" class="text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">เกณฑ์ > 50% (17 คน)</span>
+                        <span id="quorumThresholdText" class="text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">เกณฑ์ > 50% (18 คน)</span>
                     </div>
 
                     <div class="flex items-baseline justify-between">
                         <span id="quorumCounter" class="text-3xl font-extrabold text-slate-900 font-mono">
-                            0 <span class="text-sm font-normal text-slate-500">/ 34</span>
+                            0 <span class="text-sm font-normal text-slate-500">/ 35</span>
                         </span>
                         <span id="quorumBadge" class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
                             ⏳ รอการตอบรับ
@@ -206,52 +206,12 @@
             </div>
         </div>
 
-        <!-- ================= STATS SUMMARY CARDS ================= -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
-            <div class="un-card rounded-xl p-4 border-l-4 border-l-emerald-500 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Onsite</p>
-                    <h3 id="countOnsite" class="text-2xl font-bold text-emerald-700 mt-1 font-mono">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold border border-emerald-200">
-                    📍
-                </div>
-            </div>
-            <div class="un-card rounded-xl p-4 border-l-4 border-l-sky-500 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Online</p>
-                    <h3 id="countOnline" class="text-2xl font-bold text-sky-700 mt-1 font-mono">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg font-bold border border-sky-200">
-                    💻
-                </div>
-            </div>
-            <div class="un-card rounded-xl p-4 border-l-4 border-l-rose-500 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ขอลาประชุม</p>
-                    <h3 id="countLeave" class="text-2xl font-bold text-rose-700 mt-1 font-mono">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg font-bold border border-rose-200">
-                    ✉️
-                </div>
-            </div>
-            <div class="un-card rounded-xl p-4 border-l-4 border-l-amber-500 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เสนอญัตติ</p>
-                    <h3 id="countMotion" class="text-2xl font-bold text-amber-700 mt-1 font-mono">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg font-bold border border-amber-200">
-                    📌
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= MAIN CONTENT GRID (FORM & DASHBOARD) ================= -->
+        <!-- ================= MAIN CONTENT GRID ================= -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <!-- LEFT COLUMN: FORM (5 cols) -->
+            <!-- LEFT COLUMN / TOP ON MOBILE: RESPONSE FORM (5 cols on desktop) -->
             <div class="lg:col-span-5 space-y-6">
-                <div class="un-card rounded-2xl p-6 relative no-print">
+                <div class="un-card rounded-2xl p-6 relative no-print border-t-4 border-t-sky-700 shadow-md">
                     
                     <!-- Form Closed Overlay -->
                     <div id="closedOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 z-20 text-center space-y-3">
@@ -272,7 +232,7 @@
                             <svg class="w-5 h-5 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
-                            แบบฟอร์มยืนยันตัวตนสมาชิก
+                            ✍️ แบบฟอร์มยืนยันตัวตนสมาชิก
                         </h2>
                         <span class="text-xs text-rose-600 font-semibold">* จำเป็นต้องระบุ</span>
                     </div>
@@ -348,8 +308,50 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: LIVE DASHBOARD & AGENDA LIST (7 cols) -->
+            <!-- RIGHT COLUMN / BELOW FORM ON MOBILE: STATS & DASHBOARD (7 cols on desktop) -->
             <div class="lg:col-span-7 space-y-6">
+
+                <!-- STATS SUMMARY CARDS -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
+                    <div class="un-card rounded-xl p-4 border-l-4 border-l-emerald-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Onsite</p>
+                            <h3 id="countOnsite" class="text-2xl font-bold text-emerald-700 mt-1 font-mono">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold border border-emerald-200">
+                            📍
+                        </div>
+                    </div>
+                    <div class="un-card rounded-xl p-4 border-l-4 border-l-sky-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เข้าร่วม Online</p>
+                            <h3 id="countOnline" class="text-2xl font-bold text-sky-700 mt-1 font-mono">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg font-bold border border-sky-200">
+                            💻
+                        </div>
+                    </div>
+                    <div class="un-card rounded-xl p-4 border-l-4 border-l-rose-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ขอลาประชุม</p>
+                            <h3 id="countLeave" class="text-2xl font-bold text-rose-700 mt-1 font-mono">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg font-bold border border-rose-200">
+                            ✉️
+                        </div>
+                    </div>
+                    <div class="un-card rounded-xl p-4 border-l-4 border-l-amber-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">เสนอญัตติ</p>
+                            <h3 id="countMotion" class="text-2xl font-bold text-amber-700 mt-1 font-mono">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg font-bold border border-amber-200">
+                            📌
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIVE DASHBOARD & AGENDA LIST -->
                 <div class="un-card rounded-2xl p-6 min-h-[520px] flex flex-col">
                     
                     <!-- Dashboard Header & Search/Filter Controls -->
@@ -411,7 +413,7 @@
 
     <!-- ================= FOOTER ================= -->
     <footer class="mt-8 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 no-print">
-        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting และจัดการระเบียบวาระการประชุม (GMT+7 Timezone Locked)</p>
+        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting และจัดการระเบียบวาระการประชุม (Mobile-First UX)</p>
     </footer>
 
     <!-- ================= SECRETARY ADMIN MODAL ================= -->
@@ -428,7 +430,7 @@
                     🔗
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">เครื่องมือฝ่ายเลขานุการ: ออกลิงก์การประชุม</h3>
+                    <h3 class="text-lg font-bold text-slate-900">เครื่องมือฝ่ายเลขาธิการ: ออกลิงก์การประชุม</h3>
                     <p class="text-xs text-slate-500">สร้าง URL สำหรับให้สมาชิกใช้ลงทะเบียนเข้าร่วมและเสนอญัตติ (เวลา GMT+7)</p>
                 </div>
             </div>
@@ -494,7 +496,7 @@
         let cachedData = [];
         let activeTab = "ALL";
 
-        // Member list (34 members)
+        // Member list (35 members)
         const membersList = [
             "1. ทรัพย์ศิริ โสภารัตนากูล - คณะมนุษยศาสตร์", 
             "2. ภาคิไนย เอี่ยมอำไพ - คณะมนุษยศาสตร์", 
@@ -508,28 +510,29 @@
             "10. ณฐพร มีพาด - คณะวิศวกรรมศาสตร์", 
             "11. ฟิสิกส์ สุริยะไชย - คณะเกษตรศาสตร์", 
             "12. ตุลยวัฒน์ ฉางวางปราง - คณะเกษตรศาสตร์",
-            "13. ชลิต วีรกุลวัฒนา - คณะทันตแพทยศาสตร์",  
-            "14. สุกฤษฎิ์ พิศพรรณ์ - คณะเภสัชศาสตร์",
-            "15. ตรีบูรณ์ ธรรมชัย - คณะเทคนิคการแพทย์", 
-            "16. อภิญญา อินทร - คณะพยาบาลศาสตร์", 
-            "17. ณัฐณชา ทาตั๋น - คณะพยาบาลศาสตร์",
-            "18. กัลยกร สิงห์คำ - คณะอุตสาหกรรมเกษตร", 
-            "19. ณัฐริกา สุันกี้ - คณะสัตวแพทยศาสตร์", 
-            "20. ธิตยา เสนเคน - คณะสัตวแพทยศาสตร์",
-            "21. วิภาวรรณ อัยยะกา - คณะบริหารธุรกิจ", 
-            "22. ชาญวิทย์ แซ่ขู้ - คณะเศรษฐศาสตร์", 
-            "23. เบญญาภา ก้องออนตา - คณะเศรษฐศาสตร์",
-            "24. มหินธารา สินธุรัตน์ - คณะสถาปัตยกรรมศาสตร์", 
-            "25. ธนภัทร ศรีบุญมี - คณะสถาปัตยกรรมศาสตร์", 
-            "26. ฐาณิชญาณ์ รักษาแก้ว - คณะการสื่อสารมวลชน",
-            "27. วรรณกร ชูเฉลิม - คณะการสื่อสารมวลชน", 
-            "28. สรชัช มณีเกี่ยง - คณะรัฐศาสตร์ฯ", 
-            "29. ธเนศพล อุ่นทอง - คณะรัฐศาสตร์ฯ",
-            "30. ภราดร เสมอใจ - คณะนิติศาสตร์", 
-            "31. ศุภณัฏฐ์ คำตั๋น - คณะนิติศาสตร์", 
-            "32. ศุภณัฐ สุรินจักร์ - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี",
-            "33. ภูรินท์ คำปันบุตร - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี", 
-            "34. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
+            "13. ชลิต วีรกุลวัฒนา - คณะทันตแพทยศาสตร์", 
+            "14. นัทธมน ทองผุด - คณะทันตแพทยศาสตร์", 
+            "15. สุกฤษฎิ์ พิศพรรณ์ - คณะเภสัชศาสตร์",
+            "16. ตรีบูรณ์ ธรรมชัย - คณะเทคนิคการแพทย์", 
+            "17. อภิญญา อินทร - คณะพยาบาลศาสตร์", 
+            "18. ณัฐณชา ทาตั๋น - คณะพยาบาลศาสตร์",
+            "19. กัลยกร สิงห์คำ - คณะอุตสาหกรรมเกษตร", 
+            "20. ณัฐริกา สุันกี้ - คณะสัตวแพทยศาสตร์", 
+            "21. ธิตยา เสนเคน - คณะสัตวแพทยศาสตร์",
+            "22. วิภาวรรณ อัยยะกา - คณะบริหารธุรกิจ", 
+            "23. ชาญวิทย์ แซ่ขู้ - คณะเศรษฐศาสตร์", 
+            "24. เบญญาภา ก้องออนตา - คณะเศรษฐศาสตร์",
+            "25. มหินธารา สินธุรัตน์ - คณะสถาปัตยกรรมศาสตร์", 
+            "26. ธนภัทร ศรีบุญมี - คณะสถาปัตยกรรมศาสตร์", 
+            "27. ฐาณิชญาณ์ รักษาแก้ว - คณะการสื่อสารมวลชน",
+            "28. วรรณกร ชูเฉลิม - คณะการสื่อสารมวลชน", 
+            "29. สรชัช มณีเกี่ยง - คณะรัฐศาสตร์ฯ", 
+            "30. ธเนศพล อุ่นทอง - คณะรัฐศาสตร์ฯ",
+            "31. ภราดร เสมอใจ - คณะนิติศาสตร์", 
+            "32. ศุภณัฏฐ์ คำตั๋น - คณะนิติศาสตร์", 
+            "33. ศุภณัฐ สุรินจักร์ - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี",
+            "34. ภูรินท์ คำปันบุตร - วิทยาลัยศิลปะ สื่อ และเทคโนโลยี", 
+            "35. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
         ];
 
         window.onload = function() {
@@ -753,13 +756,13 @@
             if (availableMembers.length === 0) {
                 let opt = document.createElement('option');
                 opt.value = "";
-                opt.textContent = "-- สมาชิกทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว (34/34) --";
+                opt.textContent = "-- สมาชิกทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว (35/35) --";
                 opt.className = "text-slate-400 font-medium";
                 select.appendChild(opt);
                 select.disabled = true;
                 
                 if (label) {
-                    label.innerHTML = `Select Member / เลือกรายชื่อสมาชิก * <span class="text-emerald-700 font-bold ml-1">(ตอบรับครบ 34/34 คนแล้ว)</span>`;
+                    label.innerHTML = `Select Member / เลือกรายชื่อสมาชิก * <span class="text-emerald-700 font-bold ml-1">(ตอบรับครบ 35/35 คนแล้ว)</span>`;
                 }
             } else {
                 select.disabled = false;
@@ -802,10 +805,10 @@
             document.getElementById('countMotion').innerText = motionCount;
 
             // Quorum Logic (Total 35 members, Quorum > 50% = 18 members)
-            const quorumThreshold = 17;
-            document.getElementById('quorumCounter').innerHTML = `${totalResponded} <span class="text-sm font-normal text-slate-500">/ 34</span>`;
+            const quorumThreshold = 18;
+            document.getElementById('quorumCounter').innerHTML = `${totalResponded} <span class="text-sm font-normal text-slate-500">/ 35</span>`;
             
-            const percentage = Math.min(Math.round((totalResponded / 34) * 100), 100);
+            const percentage = Math.min(Math.round((totalResponded / 35) * 100), 100);
             document.getElementById('quorumProgressBar').style.width = `${percentage}%`;
 
             const quorumBadge = document.getElementById('quorumBadge');
