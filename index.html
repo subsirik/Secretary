@@ -278,12 +278,40 @@
                             <textarea id="fRemark" rows="1" class="w-full un-input px-3 py-1.5 rounded-xl text-xs placeholder-slate-400" placeholder="เช่น ขอเข้าสายเนื่องจากติดภารกิจ..."></textarea>
                         </div>
 
+                        <!-- 5. Subcommittee Regulations & Agreement (Conditional: Shown only for อนุกรรมการฯ) -->
+                        <div id="boxSubRegulations" class="hidden transition-all duration-300 bg-amber-50/90 border border-amber-300 rounded-xl p-3 sm:p-3.5 space-y-2.5 shadow-2xs">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900 border-b border-amber-200/80 pb-1.5">
+                                <span class="text-base">📜</span>
+                                <span>ข้อบังคับ / ระเบียบการเข้าร่วมประชุม (สำหรับอนุกรรมการฯ)</span>
+                            </div>
+                            <div class="bg-white/85 border border-amber-200 rounded-lg p-2.5 max-h-48 overflow-y-auto text-slate-800 text-[11px] sm:text-xs leading-relaxed space-y-1.5">
+                                <div class="font-bold text-amber-950 text-[11px]">โปรดอ่านและทำความเข้าใจข้อบังคับ/ระเบียบก่อนส่งคำตอบ:</div>
+                                <ol class="list-decimal list-outside pl-4 space-y-1 text-slate-700 font-normal">
+                                    <li>อนุกรรมาธิการและอนุกรรมการ (&quot;อนุกรรมการ&quot;) ที่เข้าร่วมการประชุมทุกท่านอยู่ภายใต้ระเบียบการประชุมสภานักศึกษามหาวิทยาลัยเชียงใหม่ ปีการศึกษา 2569</li>
+                                    <li>อนุกรรมการเข้าร่วมในฐานะผู้สังเกตุการณ์การประชุม</li>
+                                    <li>อนุกรรมการไม่มีสิทธิ์ออกความคิดเห็น ลงมติ อภิปราย เสนอญัตติ ในที่ประชุม เว้นแต่ได้รับอนุญาตจากประธานที่ประชุม</li>
+                                    <li>การประชุมทุกครั้งจะมีการบันทึกภาพและเสียงเพื่อจัดทำรายงานการประชุม หรือเอกสารอื่นใดที่เกี่ยวข้อง</li>
+                                    <li>หากเป็นการประชุมลับหรือกรณีอื่น ๆ ตามมติที่ประชุมให้อนุกรรมการออกจากที่ประชุม อนุกรรมการต้องออกจากที่ประชุม เว้นแต่ได้รับอนุญาตจากประธานที่ประชุม</li>
+                                    <li>อนุกรรมการพึงรักษาไว้ซึ่งความลับทั้งปวงในที่ประชุม</li>
+                                    <li>อนุกรรมการพึงปฏิบัติตามคำสั่งและคำแนะนำของประธานที่ประชุม</li>
+                                </ol>
+                            </div>
+                            <div class="pt-0.5">
+                                <label class="flex items-start gap-2 cursor-pointer select-none bg-white p-2.5 rounded-lg border border-amber-300 hover:border-amber-400 transition shadow-2xs">
+                                    <input type="checkbox" id="fAgreeSubRegulations" class="accent-amber-700 w-4 h-4 mt-0.5 rounded cursor-pointer shrink-0">
+                                    <span class="text-xs font-bold text-amber-950 leading-snug">
+                                        ข้าพเจ้ารับทราบและยินยอมปฏิบัติตามข้อบังคับ / ระเบียบการเข้าร่วมประชุมข้างต้นทุกประการ *
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Submit Button -->
                         <button type="submit" id="btnSubmit" class="w-full mt-1 bg-gradient-to-r from-blue-900 to-sky-800 hover:from-slate-900 hover:to-blue-900 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border border-blue-700">
                             <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span id="btnText" class="text-base">⚡ ยืนยันและส่งข้อมูล</span>
+                            <span id="btnText" class="text-base"> ยืนยันและส่งข้อมูล</span>
                         </button>
                     </form>
                 </div>
@@ -467,7 +495,7 @@
 
     <!-- ================= FOOTER ================= -->
     <footer class="mt-6 border-t border-slate-200 bg-white py-4 text-center text-[11px] text-slate-500 no-print">
-        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting (34 Council Roster • 22 Subcommittee Roster)</p>
+        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting </p>
     </footer>
 
     <!-- ================= SECRETARY ADMIN MODAL ================= -->
@@ -760,7 +788,8 @@
 
         /**
          * Member Type Radio Change Handler:
-         * Enables & populates dropdown with selected type roster, and handles Motion Proposal permissions.
+         * Enables & populates dropdown with selected type roster, handles Motion Proposal permissions,
+         * and toggles Subcommittee Regulations agreement requirement.
          */
         function handleTypeChange() {
             const selectedType = document.querySelector('input[name="memberType"]:checked')?.value;
@@ -768,27 +797,39 @@
             const lblSelect = document.getElementById('lblMemberSelect');
             const selMotion = document.getElementById('fHasMotion');
             const motionNotice = document.getElementById('motionNotice');
+            const boxSubRegulations = document.getElementById('boxSubRegulations');
+            const chkAgree = document.getElementById('fAgreeSubRegulations');
 
             if (!selectedType) {
                 select.disabled = true;
                 select.innerHTML = '<option value="" class="text-slate-400">-- กรุณาเลือกประเภทผู้ใช้งานก่อน --</option>';
+                if (boxSubRegulations) boxSubRegulations.classList.add('hidden');
+                if (chkAgree) { chkAgree.checked = false; chkAgree.required = false; }
                 return;
             }
 
             // Update Dropdown List for selected type
             updateMemberDropdown(cachedData);
 
-            // Handle Permissions
+            // Handle Permissions & Regulations
             if (selectedType === 'อนุกรรมการฯ') {
                 // Lock motion proposal to "ไม่มี" and disable input
                 selMotion.value = 'ไม่มี';
                 selMotion.disabled = true;
                 motionNotice.innerHTML = '<span class="text-rose-600 font-bold ml-1">(สิทธิ์เฉพาะสมาชิกสภาฯ)</span>';
                 toggleFields(); // Hides motion detail text area
+
+                // Show Subcommittee Regulations agreement box & require checkbox
+                if (boxSubRegulations) boxSubRegulations.classList.remove('hidden');
+                if (chkAgree) chkAgree.required = true;
             } else {
                 // Member is Council Member: Unlock motion proposal
                 selMotion.disabled = false;
                 motionNotice.innerHTML = '';
+
+                // Hide Subcommittee Regulations agreement box & unrequire checkbox
+                if (boxSubRegulations) boxSubRegulations.classList.add('hidden');
+                if (chkAgree) { chkAgree.checked = false; chkAgree.required = false; }
             }
         }
 
@@ -831,6 +872,16 @@
             if (!selectName.value) {
                 showToast("กรุณาเลือกรายชื่อผู้ใช้งานก่อนส่งข้อมูล", "warning");
                 return;
+            }
+
+            // Check Subcommittee Regulations Agreement
+            if (selectedType === 'อนุกรรมการฯ') {
+                const chkAgree = document.getElementById('fAgreeSubRegulations');
+                if (!chkAgree || !chkAgree.checked) {
+                    showToast("กรุณากดยอมรับข้อบังคับ/ระเบียบการเข้าร่วมประชุมก่อนส่งข้อมูล", "warning");
+                    if (chkAgree) chkAgree.focus();
+                    return;
+                }
             }
 
             const btn = document.getElementById('btnSubmit');
@@ -1035,7 +1086,7 @@
             activeTab = 'Onsite';
             updateFilterUI();
             renderDashboard();
-            showToast("🏷️ แสดงรายชื่อสมาชิกสภาฯ ที่มา Onsite สำหรับจัดป้ายชื่อโต๊ะประชุมแล้ว", "info");
+            showToast("🏷️ แสดงรายชื่อสมาชิกสภาฯ ที่มา Onsite แล้ว", "info");
         }
 
         function updateFilterUI() {
