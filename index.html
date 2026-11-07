@@ -6,14 +6,14 @@
     <title>ระบบตอบรับ e-Meeting สภานักศึกษา</title>
     <!-- Tailwind CSS v4 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts: Prompt & Sarabun -->
+    <!-- Google Fonts: Noto Sans Thai Looped -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { 
-            font-family: 'Sarabun', 'Prompt', sans-serif;
+            font-family: 'Noto Sans Thai Looped', 'Sarabun', 'Prompt', sans-serif;
             background-color: #f8fafc;
             color: #0f172a;
         }
@@ -59,7 +59,7 @@
 
         /* Official Report Document Styling */
         .report-paper {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Noto Sans Thai Looped', 'Sarabun', sans-serif;
             color: #000000;
             line-height: 1.5;
         }
@@ -158,11 +158,14 @@
                     </div>
                     
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <button onclick="openReportModal(event)" title="สรุปองค์ประชุม & ออกรายงาน PDF" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer border border-emerald-400/40">
+                        <button onclick="openReportModal(event)" title="สรุปองค์ประชุม & ออกรายงาน PDF" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer border border-emerald-400/40">
                             📄 <span class="hidden sm:inline">ออกรายงาน PDF</span>
                         </button>
-                        <button onclick="toggleAdminModal(true)" title="จัดการลิงก์ (ฝ่ายเลขาฯ)" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow transition flex items-center gap-1 cursor-pointer">
-                            ⚙️ <span class="hidden sm:inline">ออกลิงก์</span>
+                        <button onclick="openAdminModal('roster')" title="จัดการรายชื่อสมาชิกสภาฯ & อนุกรรมการฯ" class="px-2 sm:px-2.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow transition flex items-center gap-1 cursor-pointer border border-purple-400/40">
+                            👥 <span class="hidden sm:inline">จัดการรายชื่อ</span>
+                        </button>
+                        <button onclick="openAdminModal('linkGen')" title="จัดการลิงก์การประชุม (ฝ่ายเลขาฯ)" class="px-2 sm:px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow transition flex items-center gap-1 cursor-pointer border border-sky-400/40">
+                            🔗 <span class="hidden sm:inline">ออกลิงก์</span>
                         </button>
                     </div>
                 </div>
@@ -209,11 +212,11 @@
                             <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-300 text-xs font-semibold">
                                 <label class="flex items-center gap-2 cursor-pointer p-1.5 rounded-lg border border-slate-200 hover:bg-white transition bg-white shadow-2xs">
                                     <input type="radio" name="memberType" value="สมาชิกสภาฯ" onchange="handleTypeChange()" class="accent-sky-700 w-4 h-4 cursor-pointer">
-                                    <span class="text-slate-900">🏛️ สมาชิกสภาฯ (34)</span>
+                                    <span id="lblRadioCouncil" class="text-slate-900">🏛️ สมาชิกสภาฯ (34)</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer p-1.5 rounded-lg border border-slate-200 hover:bg-white transition bg-white shadow-2xs">
                                     <input type="radio" name="memberType" value="อนุกรรมการฯ" onchange="handleTypeChange()" class="accent-sky-700 w-4 h-4 cursor-pointer">
-                                    <span class="text-slate-900">👥 อนุกรรมการฯ (22)</span>
+                                    <span id="lblRadioSub" class="text-slate-900">👥 อนุกรรมการฯ (22)</span>
                                 </label>
                             </div>
                         </div>
@@ -263,11 +266,30 @@
                         </div>
 
                         <!-- Motion Detail (Conditional) -->
-                        <div id="boxMotion" class="hidden transition-all duration-300">
-                            <label class="block text-xs font-bold text-amber-800 mb-1">
-                                รายละเอียดญัตติที่เสนอ *
-                            </label>
-                            <textarea id="fMotionDetail" rows="2" class="w-full un-input px-3 py-2 rounded-xl text-xs border-amber-300 focus:border-amber-600 placeholder-slate-400" placeholder="ระบุหัวข้อญัตติ เหตุผลความจำเป็น และรายละเอียดโดยสังเขป..."></textarea>
+                        <div id="boxMotion" class="hidden transition-all duration-300 space-y-2">
+                            <div>
+                                <label class="block text-xs font-bold text-amber-800 mb-1">
+                                    รายละเอียดญัตติที่เสนอ *
+                                </label>
+                                <textarea id="fMotionDetail" rows="2" class="w-full un-input px-3 py-2 rounded-xl text-xs border-amber-300 focus:border-amber-600 placeholder-slate-400" placeholder="ระบุหัวข้อญัตติ เหตุผลความจำเป็น และรายละเอียดโดยสังเขป..."></textarea>
+                            </div>
+
+                            <!-- Notice when status is 'ลาประชุม' and proposes motion -->
+                            <div id="boxLeaveMotionNotice" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-2.5 text-xs text-amber-950 space-y-1.5 shadow-2xs">
+                                <div class="flex items-center gap-1.5 font-bold text-amber-900">
+                                    <span class="text-sm">⚠️</span>
+                                    <span>ระเบียบการเสนอญัตติกรณีลาประชุม:</span>
+                                </div>
+                                <p class="leading-relaxed text-[11px] text-amber-900">
+                                    สมาชิกสภาฯ ที่ลาประชุมสามารถเสนอญัตติได้ แต่<strong>หากไม่มาอภิปรายญัตตินั้นในที่ประชุม ญัตตินั้นเป็นอันตกไป</strong> เว้นแต่มอบหมายผู้อื่นอภิปรายแทน โดยควรแจ้งให้เลขานุการสภาฯ หรือประธานการประชุมทราบด้วยเพื่อการประสานงานต่อไป
+                                </p>
+                                <div class="pt-0.5">
+                                    <label class="block text-[11px] font-bold text-amber-950 mb-0.5">
+                                        ระบุผู้ได้รับมอบหมายให้อภิปรายแทน (ถ้ามี):
+                                    </label>
+                                    <input type="text" id="fMotionDebater" class="w-full un-input px-2.5 py-1.5 rounded-lg text-xs border-amber-300 placeholder-slate-400 bg-white" placeholder="เช่น มอบหมายให้ นาย/นางสาว... อภิปรายแทน">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Additional Remarks -->
@@ -311,7 +333,7 @@
                             <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span id="btnText" class="text-base"> ยืนยันและส่งข้อมูล</span>
+                            <span id="btnText" class="text-base">⚡ ยืนยันและส่งข้อมูล</span>
                         </button>
                     </form>
                 </div>
@@ -340,7 +362,7 @@
                     <div class="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                         <div class="flex justify-between text-xs font-semibold text-slate-800">
                             <span>องค์ประชุมสภาฯ (Council Quorum): <strong id="quorumCounter" class="text-sky-900 font-mono text-sm">0/34</strong></span>
-                            <span class="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300 text-[11px]">เกณฑ์บังคับ > 50% (17 คน)</span>
+                            <span id="quorumRuleText" class="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300 text-[11px]">เกณฑ์บังคับ > 50% (17 คน)</span>
                         </div>
                         <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-slate-300">
                             <div id="quorumProgressBar" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -495,12 +517,12 @@
 
     <!-- ================= FOOTER ================= -->
     <footer class="mt-6 border-t border-slate-200 bg-white py-4 text-center text-[11px] text-slate-500 no-print">
-        <p>© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting </p>
+        <p id="footerRosterText">© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting (34 Council Roster • 22 Subcommittee Roster)</p>
     </footer>
 
-    <!-- ================= SECRETARY ADMIN MODAL ================= -->
+    <!-- ================= SECRETARY ADMIN MODAL (ออกลิงก์ & จัดการรายชื่อ) ================= -->
     <div id="adminModal" class="fixed inset-0 un-modal-backdrop z-50 hidden flex items-center justify-center p-3 transition-all duration-300 no-print">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 space-y-4 relative">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 space-y-4 relative max-h-[95vh] overflow-y-auto">
             <button onclick="toggleAdminModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -508,23 +530,34 @@
             </button>
 
             <div class="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-                <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-200 font-bold text-sm">
-                    🔗
+                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-200 font-bold text-base">
+                    ⚙️
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">เครื่องมือฝ่ายเลขาธิการ: ออกลิงก์การประชุม</h3>
-                    <p class="text-[11px] text-slate-500">สร้าง URL สำหรับลงทะเบียนเข้าร่วมประชุม (เวลา GMT+7)</p>
+                    <h3 class="text-base font-bold text-slate-900">เครื่องมือฝ่ายเลขานุการสภานักศึกษา</h3>
+                    <p class="text-[11px] text-slate-500">ออกลิงก์การประชุม &amp; จัดการรายชื่อสมาชิกสภาฯ และอนุกรรมการฯ (เวลา GMT+7)</p>
                 </div>
             </div>
 
-            <div class="space-y-3">
+            <!-- Tab Navigation inside Admin Modal -->
+            <div class="flex border-b border-slate-200 text-xs font-semibold gap-2">
+                <button type="button" onclick="switchAdminTab('linkGen')" id="admTabLinkGen" class="px-3 py-2 border-b-2 border-sky-700 text-sky-900 font-bold cursor-pointer transition">
+                    🔗 ออกลิงก์การประชุม
+                </button>
+                <button type="button" onclick="switchAdminTab('roster')" id="admTabRoster" class="px-3 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition">
+                    👥 จัดการรายชื่อผู้เข้าร่วม (<span id="admTotalCountBadge">56</span> คน)
+                </button>
+            </div>
+
+            <!-- Tab 1: Link Generator -->
+            <div id="admSectionLinkGen" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">แม่แบบชื่อการประชุมด่วน (Presets)</label>
                     <div class="flex flex-wrap gap-1.5 text-xs">
-                        <button type="button" onclick="setPresetTitle('การประชุมสามัญสภานักศึกษา ประจำเดือนตุลาคม')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer text-[11px]">
+                        <button type="button" onclick="setPresetTitle('การประชุมสามัญสภานักศึกษา ประจำเดือนพฤศจิกายน')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer text-[11px]">
                             สามัญประจำเดือน
                         </button>
-                        <button type="button" onclick="setPresetTitle('การประชุมวิสามัญสภานักศึกษา ครั้งที่ 1/2569')" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer text-[11px]">
+                        <button type="button" onclick="setPresetTitle('การประชุมวิสามัญสภานักศึกษา ครั้งที่ 1/2569')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer text-[11px]">
                             วิสามัญ 1/2569
                         </button>
                     </div>
@@ -537,7 +570,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">กำหนดการประชุม (ข้อความแสดงผล) *</label>
-                    <input type="text" id="genDateText" class="w-full un-input px-3 py-2 rounded-xl text-xs" placeholder="เช่น 7 ต.ค. 69 เวลา 17.00-21.00 น. ณ ห้องประชุมสภาฯ">
+                    <input type="text" id="genDateText" class="w-full un-input px-3 py-2 rounded-xl text-xs" placeholder="เช่น 14 พ.ย. 69 เวลา 17.00-21.00 น. ณ ห้องประชุมสภาฯ">
                 </div>
 
                 <div>
@@ -562,6 +595,49 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tab 2: Roster Manager (Council & Subcommittees) -->
+            <div id="admSectionRoster" class="hidden space-y-3">
+                <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-[11px] text-amber-950">
+                    💡 <strong>คำแนะนำ:</strong> สามารถแก้ไขตัวสะกด เพิ่ม หรือลบรายชื่อได้โดยตรง (1 บรรทัด ต่อ 1 ท่าน) จากนั้นกด <strong>"บันทึกรายชื่อใหม่"</strong> ระบบจะบันทึกลงเบราว์เซอร์และอัปเดตแบบฟอร์ม องค์ประชุม และรายงานทันทีโดยไม่ต้องแก้ไขโค้ด
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-800">
+                                🏛️ 1. สมาชิกสภาฯ (นับองค์ประชุม)
+                            </label>
+                            <span id="cntRosterCouncil" class="text-[11px] font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                                34 ท่าน
+                            </span>
+                        </div>
+                        <textarea id="txtRosterCouncil" rows="6" class="w-full un-input p-2.5 rounded-xl text-xs font-mono leading-relaxed" placeholder="วางรายชื่อสมาชิกสภาฯ (1 บรรทัด ต่อ 1 ท่าน)..."></textarea>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-slate-800">
+                                👥 2. คณะอนุกรรมการฯ (ผู้สังเกตการณ์)
+                            </label>
+                            <span id="cntRosterSub" class="text-[11px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                                22 ท่าน
+                            </span>
+                        </div>
+                        <textarea id="txtRosterSub" rows="6" class="w-full un-input p-2.5 rounded-xl text-xs font-mono leading-relaxed" placeholder="วางรายชื่อคณะอนุกรรมการฯ (1 บรรทัด ต่อ 1 ท่าน)..."></textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1 border-t border-slate-200">
+                    <button type="button" onclick="saveCustomRosters()" class="flex-1 bg-sky-800 hover:bg-sky-900 text-white font-bold py-2 rounded-xl text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+                        💾 บันทึกรายชื่อใหม่
+                    </button>
+                    <button type="button" onclick="resetDefaultRosters()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs border border-slate-300 transition cursor-pointer">
+                        🔄 คืนค่าเริ่มต้น (34 สภาฯ / 22 อนุฯ)
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -622,12 +698,8 @@
         let activeTab = "ALL";
         let activeGroup = "ALL"; // 'ALL', 'COUNCIL', 'SUB'
 
-        // Total Council Members = 34
-        const TOTAL_MEMBERS = 34;
-        const QUORUM_THRESHOLD = 17;
-
-        // Member list (34 members)
-        const membersList = [
+        // Default Council Roster (34 members)
+        const DEFAULT_MEMBERS_LIST = [
             "1. ทรัพย์ศิริ โสภารัตนากูล - คณะมนุษยศาสตร์", 
             "2. ภาคิไน เอี่ยมอำไพ - คณะมนุษยศาสตร์", 
             "3. วัชรายุทธ ซึมทราย - คณะศึกษาศาสตร์",
@@ -664,8 +736,8 @@
             "34. ณภัทร จันทร์พุ่ม - วิทยาลัยนานาชาตินวัตกรรมดิจิทัล"
         ];
 
-        // Subcommittee Member list (22 members)
-        const subMembersList = [
+        // Default Subcommittee Roster (22 members)
+        const DEFAULT_SUB_MEMBERS_LIST = [
             "ชุติกาญจน์ ผิวผ่อง - อนุกรรมาธิการฝ่ายรับฟังความคิดเห็น", 
             "สุธีมนต์ สมบูรณ์เอนก - อนุกรรมาธิการฝ่ายรับฟังความคิดเห็น",
             "ชัยสิทธิ์ สราญสิริบริรักษ์ - อนุกรรมาธิการฝ่ายรับฟังความคิดเห็น", 
@@ -690,11 +762,18 @@
             "ภัทรสุพิชชา แก้วสว่าง - อนุกรรมการฝ่ายธุรการและประสานงาน"
         ];
 
-        // Sets for fast lookups
-        const councilMembersSet = new Set(membersList);
-        const subMembersSet = new Set(subMembersList);
+        // Dynamic State for Rosters
+        let membersList = [];
+        let subMembersList = [];
+        let councilMembersSet = new Set();
+        let subMembersSet = new Set();
+        let TOTAL_MEMBERS = 34;
+        let QUORUM_THRESHOLD = 17;
 
         window.onload = function() {
+            // Load custom or default rosters from LocalStorage
+            loadRosters();
+
             // Real-time Clock & Deadline Timer Interval locked to GMT+7 (Asia/Bangkok)
             setInterval(updateClocks, 1000);
             updateClocks();
@@ -746,13 +825,141 @@
             }
         }
 
+        function openAdminModal(tab = 'linkGen') {
+            switchAdminTab(tab);
+            toggleAdminModal(true);
+        }
+
         function toggleAdminModal(show) {
             const modal = document.getElementById('adminModal');
             if (show) {
                 modal.classList.remove('hidden');
+                syncRosterTextareas();
             } else {
                 modal.classList.add('hidden');
             }
+        }
+
+        function switchAdminTab(tab) {
+            const secLink = document.getElementById('admSectionLinkGen');
+            const secRoster = document.getElementById('admSectionRoster');
+            const tabLink = document.getElementById('admTabLinkGen');
+            const tabRoster = document.getElementById('admTabRoster');
+
+            if (tab === 'roster') {
+                secLink.classList.add('hidden');
+                secRoster.classList.remove('hidden');
+                tabLink.className = "px-3 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition";
+                tabRoster.className = "px-3 py-2 border-b-2 border-sky-700 text-sky-900 font-bold cursor-pointer transition";
+                syncRosterTextareas();
+            } else {
+                secLink.classList.remove('hidden');
+                secRoster.classList.add('hidden');
+                tabLink.className = "px-3 py-2 border-b-2 border-sky-700 text-sky-900 font-bold cursor-pointer transition";
+                tabRoster.className = "px-3 py-2 border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition";
+            }
+        }
+
+        function syncRosterTextareas() {
+            const txtC = document.getElementById('txtRosterCouncil');
+            const txtS = document.getElementById('txtRosterSub');
+            if (txtC) txtC.value = membersList.join('\n');
+            if (txtS) txtS.value = subMembersList.join('\n');
+
+            const cntC = document.getElementById('cntRosterCouncil');
+            if (cntC) cntC.innerText = `${membersList.length} ท่าน`;
+            const cntS = document.getElementById('cntRosterSub');
+            if (cntS) cntS.innerText = `${subMembersList.length} ท่าน`;
+
+            const badgeTotal = document.getElementById('admTotalCountBadge');
+            if (badgeTotal) badgeTotal.innerText = `${membersList.length + subMembersList.length}`;
+        }
+
+        function loadRosters() {
+            try {
+                const savedCouncil = localStorage.getItem('council_roster_members_v2');
+                if (savedCouncil) {
+                    membersList = JSON.parse(savedCouncil);
+                } else {
+                    membersList = [...DEFAULT_MEMBERS_LIST];
+                }
+            } catch (e) {
+                membersList = [...DEFAULT_MEMBERS_LIST];
+            }
+
+            try {
+                const savedSub = localStorage.getItem('council_roster_sub_v2');
+                if (savedSub) {
+                    subMembersList = JSON.parse(savedSub);
+                } else {
+                    subMembersList = [...DEFAULT_SUB_MEMBERS_LIST];
+                }
+            } catch (e) {
+                subMembersList = [...DEFAULT_SUB_MEMBERS_LIST];
+            }
+
+            applyRostersUpdate();
+        }
+
+        function saveCustomRosters() {
+            const cTxt = document.getElementById('txtRosterCouncil').value.trim();
+            const sTxt = document.getElementById('txtRosterSub').value.trim();
+
+            if (!cTxt) {
+                showToast("กรุณากรอกรายชื่อสมาชิกสภาฯ อย่างน้อย 1 ท่าน", "warning");
+                return;
+            }
+
+            membersList = cTxt.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            localStorage.setItem('council_roster_members_v2', JSON.stringify(membersList));
+
+            if (sTxt) {
+                subMembersList = sTxt.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                localStorage.setItem('council_roster_sub_v2', JSON.stringify(subMembersList));
+            } else {
+                subMembersList = [];
+                localStorage.setItem('council_roster_sub_v2', JSON.stringify([]));
+            }
+
+            applyRostersUpdate();
+            showToast("💾 บันทึกรายชื่อใหม่และอัปเดตระบบเรียบร้อยแล้ว!", "success");
+        }
+
+        function resetDefaultRosters() {
+            localStorage.removeItem('council_roster_members_v2');
+            localStorage.removeItem('council_roster_sub_v2');
+            membersList = [...DEFAULT_MEMBERS_LIST];
+            subMembersList = [...DEFAULT_SUB_MEMBERS_LIST];
+            applyRostersUpdate();
+            syncRosterTextareas();
+            showToast("🔄 คืนค่ารายชื่อเริ่มต้น (34 สภาฯ / 22 อนุฯ) เรียบร้อยแล้ว!", "info");
+        }
+
+        function applyRostersUpdate() {
+            TOTAL_MEMBERS = membersList.length;
+            QUORUM_THRESHOLD = Math.floor(TOTAL_MEMBERS / 2) + 1;
+
+            councilMembersSet = new Set(membersList);
+            subMembersSet = new Set(subMembersList);
+
+            // Update radio button labels
+            const lblRadioC = document.getElementById('lblRadioCouncil');
+            if (lblRadioC) lblRadioC.innerText = `🏛️ สมาชิกสภาฯ (${TOTAL_MEMBERS})`;
+            const lblRadioS = document.getElementById('lblRadioSub');
+            if (lblRadioS) lblRadioS.innerText = `👥 อนุกรรมการฯ (${subMembersList.length})`;
+
+            // Update Quorum criteria label
+            const quorumRuleText = document.getElementById('quorumRuleText');
+            if (quorumRuleText) quorumRuleText.innerText = `เกณฑ์บังคับ > 50% (${QUORUM_THRESHOLD} คน)`;
+
+            // Update footer
+            const footerText = document.getElementById('footerRosterText');
+            if (footerText) footerText.innerText = `© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting (${TOTAL_MEMBERS} Council Roster • ${subMembersList.length} Subcommittee Roster)`;
+
+            updateMemberDropdown(cachedData);
+            updateStatsAndQuorum(cachedData);
+            renderDashboard();
+            syncRosterTextareas();
         }
 
         function setPresetTitle(title) {
@@ -836,6 +1043,7 @@
         function toggleFields() {
             const status = document.getElementById('fStatus').value;
             const hasMotion = document.getElementById('fHasMotion').value;
+            const selectedType = document.querySelector('input[name="memberType"]:checked')?.value;
             
             const boxReason = document.getElementById('boxReason');
             const inpReason = document.getElementById('fReason');
@@ -850,13 +1058,21 @@
 
             const boxMotion = document.getElementById('boxMotion');
             const inpMotion = document.getElementById('fMotionDetail');
+            const boxLeaveNotice = document.getElementById('boxLeaveMotionNotice');
+
             if (hasMotion === 'มี') { 
                 boxMotion.classList.remove('hidden'); 
                 inpMotion.required = true; 
+                if (status === 'ลาประชุม' && selectedType !== 'อนุกรรมการฯ') {
+                    if (boxLeaveNotice) boxLeaveNotice.classList.remove('hidden');
+                } else {
+                    if (boxLeaveNotice) boxLeaveNotice.classList.add('hidden');
+                }
             } else { 
                 boxMotion.classList.add('hidden'); 
                 inpMotion.required = false; 
                 inpMotion.value = ''; 
+                if (boxLeaveNotice) boxLeaveNotice.classList.add('hidden');
             }
         }
 
@@ -889,15 +1105,24 @@
             btn.disabled = true; 
             btnText.innerText = "กำลังส่งข้อมูล...";
 
+            let motionDetailVal = document.getElementById('fMotionDetail').value.trim();
+            const debaterVal = document.getElementById('fMotionDebater')?.value.trim();
+            const statusVal = document.getElementById('fStatus').value;
+            const hasMotionVal = document.getElementById('fHasMotion').value;
+
+            if (debaterVal && statusVal === 'ลาประชุม' && hasMotionVal === 'มี') {
+                motionDetailVal += (motionDetailVal ? String.fromCharCode(10) : "") + `[ผู้ได้รับมอบหมายอภิปรายแทน: ${debaterVal}]`;
+            }
+
             const params = new URLSearchParams({
                 action: 'insert',
                 meetingTitle: currentMeetingTitle,
                 memberType: selectedType,
                 name: selectName.value,
-                status: document.getElementById('fStatus').value,
+                status: statusVal,
                 reason: document.getElementById('fReason').value,
-                hasMotion: document.getElementById('fHasMotion').value,
-                motionDetail: document.getElementById('fMotionDetail').value,
+                hasMotion: hasMotionVal,
+                motionDetail: motionDetailVal,
                 remark: document.getElementById('fRemark').value
             });
 
@@ -909,6 +1134,7 @@
                 
                 // Reset radio & dropdown state
                 document.querySelectorAll('input[name="memberType"]').forEach(r => r.checked = false);
+                if (document.getElementById('fMotionDebater')) document.getElementById('fMotionDebater').value = '';
                 handleTypeChange();
                 
                 fetchData();
@@ -1086,7 +1312,7 @@
             activeTab = 'Onsite';
             updateFilterUI();
             renderDashboard();
-            showToast("🏷️ แสดงรายชื่อสมาชิกสภาฯ ที่มา Onsite แล้ว", "info");
+            showToast("🏷️ แสดงรายชื่อสมาชิกสภาฯ ที่มา Onsite สำหรับจัดป้ายชื่อโต๊ะประชุมแล้ว", "info");
         }
 
         function updateFilterUI() {
@@ -1174,14 +1400,24 @@
                     ? `<div class="mt-1.5 text-xs text-rose-900 bg-rose-50/80 p-2 rounded-lg border border-rose-200"><strong>เหตุผลการลา:</strong> ${escapeHtml(item.reason)}</div>` 
                     : '';
                 
-                let motionHtml = (item.hasMotion === 'มี' && item.motionDetail) 
-                    ? `<div class="mt-2 bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-xs text-amber-950 space-y-0.5">
-                        <div class="flex items-center gap-1 font-bold text-amber-800">
-                            <span>📌 ญัตติที่เสนอเพื่ออภิปราย</span>
+                let motionHtml = '';
+                if (item.hasMotion === 'มี' && item.motionDetail) {
+                    let leaveMotionWarning = item.status === 'ลาประชุม' 
+                        ? `<div class="mt-1 text-[11px] text-amber-900 bg-amber-100/80 p-1.5 rounded border border-amber-300 leading-normal">
+                            <strong>⚠️ ข้อบังคับ:</strong> สมาชิกสภาฯ ลาประชุม หากไม่มาอภิปรายในที่ประชุม ญัตตินี้เป็นอันตกไป เว้นแต่มอบหมายผู้อื่นอภิปรายแทน (แจ้งเลขาฯ/ประธานการประชุม)
+                           </div>`
+                        : '';
+                    motionHtml = `
+                        <div class="mt-2 bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-xs text-amber-950 space-y-0.5">
+                            <div class="flex items-center gap-1 font-bold text-amber-800">
+                                <span>📌 ญัตติที่เสนอเพื่ออภิปราย</span>
+                                ${item.status === 'ลาประชุม' ? '<span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-semibold ml-1">ผู้เสนอลาประชุม</span>' : ''}
+                            </div>
+                            <p class="leading-relaxed text-slate-800">${escapeHtml(item.motionDetail)}</p>
+                            ${leaveMotionWarning}
                         </div>
-                        <p class="leading-relaxed text-slate-800">${escapeHtml(item.motionDetail)}</p>
-                       </div>` 
-                    : '';
+                    `;
+                }
                 
                 let remarkHtml = item.remark 
                     ? `<p class="text-[11px] text-slate-500 mt-1 italic"><strong>หมายเหตุ:</strong> ${escapeHtml(item.remark)}</p>` 
@@ -1212,13 +1448,13 @@
 
         /**
          * Renders the Official Document PDF / Summary Report matching the CMU Student Council Report Format
-         * Including Section 4: Subcommittee Members / Observers Attendance List
+         * Adapted from CMU SO with Structured Attendance Table, Quorum Banner, Motions Summary & Official Signatures
          */
         function renderOfficialReport() {
             const docTitle = document.getElementById('reportDocTitle');
             const docBody = document.getElementById('reportDocBody');
 
-            docTitle.innerText = `สถิติการตอบรับเข้าร่วมประชุม${currentMeetingTitle}`;
+            docTitle.innerText = `รายงานสรุปสถิติการตอบรับเข้าร่วมการประชุม${currentMeetingTitle}`;
 
             // Filter Council responses vs Subcommittee responses
             const councilResponses = cachedData.filter(i => councilMembersSet.has(i.name) || i.memberType === 'สมาชิกสภาฯ');
@@ -1229,30 +1465,67 @@
             const councilLeave = councilResponses.filter(i => i.status === 'ลาประชุม');
             const councilTotalAttending = councilOnline.length + councilOnsite.length;
 
+            const subOnline = subResponses.filter(i => i.status === 'Online');
+            const subOnsite = subResponses.filter(i => i.status === 'Onsite');
+            const subLeave = subResponses.filter(i => i.status === 'ลาประชุม');
+            const subTotalAttending = subOnline.length + subOnsite.length;
+
+            const totalOnsite = councilOnsite.length + subOnsite.length;
+            const totalOnline = councilOnline.length + subOnline.length;
+            const totalLeave = councilLeave.length + subLeave.length;
+            const grandTotalAttending = councilTotalAttending + subTotalAttending;
+            const totalSeats = TOTAL_MEMBERS + subMembersList.length;
+
+            const isQuorumReached = councilTotalAttending >= QUORUM_THRESHOLD;
+
+            // Unresponded lists
             const councilRespondedNamesSet = new Set(councilResponses.map(i => i.name));
             const councilUnrespondedList = membersList.filter(name => !councilRespondedNamesSet.has(name));
 
-            // Section 2: Council Leave List
+            const subRespondedNamesSet = new Set(subResponses.map(i => i.name));
+            const subUnrespondedList = subMembersList.filter(name => !subRespondedNamesSet.has(name));
+
+            // Catering Count (Total Onsite from Both Groups)
+            const totalCatering = totalOnsite;
+
+            // Motions List (Only Council Members have motion rights)
+            let motionsListHtml = '';
+            const allMotions = cachedData.filter(i => i.hasMotion === 'มี' && i.motionDetail);
+            if (allMotions.length > 0) {
+                allMotions.forEach((item, idx) => {
+                    const isLeave = item.status === 'ลาประชุม';
+                    let leaveBadge = isLeave 
+                        ? `<span class="text-amber-800 font-bold text-[11px] bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300 ml-1.5">[ผู้เสนอลาประชุม]</span>` 
+                        : '';
+                    let leaveRuleNotice = isLeave 
+                        ? `<div class="mt-1 text-[11px] text-amber-900 bg-amber-50/90 p-1.5 rounded border border-amber-300 leading-normal">
+                            ⚠️ <em>ข้อบังคับ:</em> สมาชิกสภาฯ ที่ลาประชุมสามารถเสนอญัตติได้ แต่หากไม่มาอภิปรายในที่ประชุม ญัตติเป็นอันตกไป เว้นแต่มอบหมายผู้อื่นอภิปรายแทน โดยควรแจ้งเลขานุการสภาฯ หรือประธานการประชุมเพื่อการประสานงานต่อไป
+                           </div>` 
+                        : '';
+
+                    motionsListHtml += `
+                        <div class="py-1.5 border-b border-slate-200 report-item space-y-1">
+                            <div class="font-bold text-slate-900">ญัตติที่ ${idx + 1}: โดย <u>${escapeHtml(item.name)}</u> ${leaveBadge}</div>
+                            <div class="pl-4 text-slate-800 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-200">${escapeHtml(item.motionDetail)}</div>
+                            ${leaveRuleNotice}
+                        </div>
+                    `;
+                });
+            } else {
+                motionsListHtml = `<div class="py-1 text-slate-500 italic report-item">(ไม่มีญัตติที่เสนอเพื่ออภิปรายในการประชุมครั้งนี้)</div>`;
+            }
+
+            // Council Leave List with reasons
             let leaveItemsHtml = '';
             if (councilLeave.length > 0) {
                 councilLeave.forEach(item => {
-                    leaveItemsHtml += `<div class="py-0.5 report-item"><strong>${escapeHtml(item.name)}</strong> ${item.reason ? 'เพราะ <span class="underline underline-offset-2">' + escapeHtml(item.reason) + '</span>' : ''}</div>`;
+                    leaveItemsHtml += `<div class="py-0.5 report-item">• <strong>${escapeHtml(item.name)}</strong> ${item.reason ? 'เหตุผล: <span class="underline underline-offset-2 text-rose-900">' + escapeHtml(item.reason) + '</span>' : ''}</div>`;
                 });
             } else {
                 leaveItemsHtml = `<div class="py-0.5 text-slate-500 italic report-item">(ไม่มีผู้ขอลาประชุม)</div>`;
             }
 
-            // Section 3: Council Unresponded List
-            let unrespondedItemsHtml = '';
-            if (councilUnrespondedList.length > 0) {
-                councilUnrespondedList.forEach(name => {
-                    unrespondedItemsHtml += `<div class="py-0.5 report-item"><strong>${escapeHtml(name)}</strong></div>`;
-                });
-            } else {
-                unrespondedItemsHtml = `<div class="py-0.5 text-slate-500 italic report-item">(สมาชิกสภาฯ ทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว)</div>`;
-            }
-
-            // Section 4: Subcommittee / Observers List
+            // Subcommittee List
             let subItemsHtml = '';
             if (subResponses.length > 0) {
                 subResponses.forEach(item => {
@@ -1260,75 +1533,147 @@
                     if (item.status === 'ลาประชุม' && item.reason) {
                         statusLabel += `: ${item.reason}`;
                     }
-                    subItemsHtml += `<div class="py-0.5 report-item"><strong>${escapeHtml(item.name)}</strong> <span class="text-slate-700">(${escapeHtml(statusLabel)})</span></div>`;
+                    subItemsHtml += `<div class="py-0.5 report-item">• <strong>${escapeHtml(item.name)}</strong> <span class="text-slate-700">(${escapeHtml(statusLabel)})</span></div>`;
                 });
             } else {
                 subItemsHtml = `<div class="py-0.5 text-slate-500 italic report-item">(ยังไม่มีอนุกรรมการลงทะเบียนตอบรับ)</div>`;
             }
 
+            // Council Unresponded HTML
+            let unrespondedCouncilHtml = '';
+            if (councilUnrespondedList.length > 0) {
+                councilUnrespondedList.forEach(name => {
+                    unrespondedCouncilHtml += `<div class="py-0.5 report-item">• ${escapeHtml(name)}</div>`;
+                });
+            } else {
+                unrespondedCouncilHtml = `<div class="py-0.5 text-slate-500 italic report-item">(สมาชิกสภาฯ ทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว)</div>`;
+            }
+
+            // Sub Unresponded HTML
+            let unrespondedSubHtml = '';
+            if (subUnrespondedList.length > 0) {
+                subUnrespondedList.forEach(name => {
+                    unrespondedSubHtml += `<div class="py-0.5 report-item">• ${escapeHtml(name)}</div>`;
+                });
+            } else {
+                unrespondedSubHtml = `<div class="py-0.5 text-slate-500 italic report-item">(อนุกรรมการฯ ทุกคนลงทะเบียนตอบรับครบถ้วนแล้ว)</div>`;
+            }
+
             let html = `
                 <div class="space-y-4 text-black font-normal leading-relaxed text-sm">
                     
-                    <!-- Section 1: Attending Summary (Council) -->
-                    <div class="report-item">
-                        <div class="font-bold text-base text-black mb-1">ผู้ตอบรับเข้าร่วมการประชุม (สมาชิกสภาฯ)</div>
-                        <div class="pl-6 space-y-1">
-                            <div class="font-semibold text-black">แบ่งเป็น</div>
-                            <div class="flex justify-between max-w-xs pl-8">
-                                <span>Online</span>
-                                <span><strong class="font-bold text-black">${councilOnline.length}</strong> คน</span>
-                            </div>
-                            <div class="flex justify-between max-w-xs pl-8">
-                                <span>Onsite</span>
-                                <span><strong class="font-bold text-black">${councilOnsite.length}</strong> คน</span>
-                            </div>
-                            <div class="flex justify-between max-w-xs pl-8 pt-1 border-t border-slate-400 font-bold text-black">
-                                <span>รวม</span>
-                                <span>${councilTotalAttending} คน</span>
-                            </div>
+                    <!-- Section 1: Quorum Status Banner -->
+                    <div class="border-2 border-black p-3 bg-slate-50 report-item space-y-1">
+                        <div class="flex justify-between items-center font-bold text-base">
+                            <span>ผลการตรวจสอบองค์ประชุมสภาฯ (Council Quorum Status):</span>
+                            <span>${isQuorumReached ? '✅ ครบองค์ประชุมสภาฯ' : '⏳ ยังไม่ครบองค์ประชุมสภาฯ'}</span>
+                        </div>
+                        <div class="text-xs text-slate-700">
+                            เกณฑ์บังคับกึ่งหนึ่งตามข้อบังคับ: ต้องมีสมาชิกสภาฯ เข้าร่วมประชุม (Onsite + Online) <strong>มากกว่า ${QUORUM_THRESHOLD - 1} คน (อย่างน้อย ${QUORUM_THRESHOLD} คน)</strong> จากจำนวนสมาชิกสภาฯ ทั้งหมด <strong>${TOTAL_MEMBERS}</strong> คน
+                        </div>
+                        <div class="font-bold text-sm pt-1 border-t border-slate-300 flex justify-between">
+                            <span>สมาชิกสภาฯ ตอบรับเข้าร่วมนับเป็นองค์ประชุม:</span>
+                            <span class="font-mono text-base">${councilTotalAttending} / ${TOTAL_MEMBERS} คน (${Math.round((councilTotalAttending / TOTAL_MEMBERS) * 100)}%)</span>
                         </div>
                     </div>
 
-                    <!-- Section 2: Leave List with Reasons (Council) -->
-                    <div class="pt-2 report-item">
-                        <div class="font-bold text-base text-black">
-                            ลาการประชุม <span class="font-bold underline">${councilLeave.length}</span> คน
+                    <!-- Section 2: Attendance Table Breakdown (Adapted from CMU SO) -->
+                    <div class="report-item space-y-1.5">
+                        <div class="font-bold text-base text-black">1. สถิติจำแนกตามประเภทสมาชิกและรูปแบบการเข้าร่วม</div>
+                        <table class="w-full text-xs border-collapse border border-black text-center">
+                            <thead>
+                                <tr class="bg-slate-100 font-bold">
+                                    <th class="border border-black p-1.5 text-left pl-2">กลุ่ม / ประเภทสมาชิก</th>
+                                    <th class="border border-black p-1.5">จำนวนทั้งหมด</th>
+                                    <th class="border border-black p-1.5">สะดวก Onsite</th>
+                                    <th class="border border-black p-1.5">สะดวก Online</th>
+                                    <th class="border border-black p-1.5">ลาประชุม</th>
+                                    <th class="border border-black p-1.5 bg-slate-200">รวมเข้าร่วมประชุม</th>
+                                    <th class="border border-black p-1.5">การนับองค์ประชุม</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-black p-1.5 text-left pl-2 font-semibold">1. สมาชิกสภาฯ (Council Members)</td>
+                                    <td class="border border-black p-1.5 font-bold font-mono">${TOTAL_MEMBERS}</td>
+                                    <td class="border border-black p-1.5 font-mono">${councilOnsite.length}</td>
+                                    <td class="border border-black p-1.5 font-mono">${councilOnline.length}</td>
+                                    <td class="border border-black p-1.5 font-mono">${councilLeave.length}</td>
+                                    <td class="border border-black p-1.5 font-bold bg-slate-100 font-mono">${councilTotalAttending}</td>
+                                    <td class="border border-black p-1.5 text-[11px] font-bold text-emerald-800">นับองค์ประชุม (${councilTotalAttending}/${TOTAL_MEMBERS})</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-black p-1.5 text-left pl-2 font-semibold">2. คณะอนุกรรมการฯ (Subcommittees)</td>
+                                    <td class="border border-black p-1.5 font-bold font-mono">${subMembersList.length}</td>
+                                    <td class="border border-black p-1.5 font-mono">${subOnsite.length}</td>
+                                    <td class="border border-black p-1.5 font-mono">${subOnline.length}</td>
+                                    <td class="border border-black p-1.5 font-mono">${subLeave.length}</td>
+                                    <td class="border border-black p-1.5 font-bold bg-slate-100 font-mono">${subTotalAttending}</td>
+                                    <td class="border border-black p-1.5 text-[11px] text-slate-600">ผู้สังเกตการณ์ (ไม่นับองค์ประชุม)</td>
+                                </tr>
+                                <tr class="font-bold bg-slate-200">
+                                    <td class="border border-black p-1.5 text-left pl-2">รวมทั้งสิ้น</td>
+                                    <td class="border border-black p-1.5 font-mono">${totalSeats}</td>
+                                    <td class="border border-black p-1.5 font-mono">${totalOnsite}</td>
+                                    <td class="border border-black p-1.5 font-mono">${totalOnline}</td>
+                                    <td class="border border-black p-1.5 font-mono">${totalLeave}</td>
+                                    <td class="border border-black p-1.5 font-extrabold font-mono">${grandTotalAttending}</td>
+                                    <td class="border border-black p-1.5 text-[11px]">องค์ประชุมสภาฯ ${councilTotalAttending}/${TOTAL_MEMBERS}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Section 3: Catering Order Breakdown -->
+                    <div class="border border-black p-2.5 bg-slate-50 report-item flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-sm">2. ยอดการสั่งอาหารจัดเลี้ยงรับรอง ณ ห้องประชุม Onsite:</div>
+                            <div class="text-[11px] text-slate-700">(นับรวมสมาชิกสภาฯ Onsite ${councilOnsite.length} ชุด + อนุกรรมการฯ Onsite ${subOnsite.length} ชุด)</div>
                         </div>
-                        <div class="pl-6 pt-1">
-                            <div class="font-semibold text-black mb-1">ได้แก่</div>
-                            <div class="pl-4 space-y-0.5">
-                                ${leaveItemsHtml}
-                            </div>
+                        <div class="text-right">
+                            <span class="text-xl font-bold underline font-mono">${totalCatering}</span> ชุด
                         </div>
                     </div>
 
-                    <!-- Section 3: Unresponded Roster List (Council) -->
-                    <div class="pt-2 report-item">
-                        <div class="font-bold text-base text-black">
-                            ไม่ตอบแบบฟอร์มการประชุม <span class="font-bold underline">${councilUnrespondedList.length}</span> คน
-                        </div>
-                        <div class="pl-6 pt-1">
-                            <div class="font-semibold text-black mb-1">ได้แก่</div>
-                            <div class="pl-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-                                ${unrespondedItemsHtml}
-                            </div>
+                    <!-- Section 4: Motions Summary (สรุปญัตติ - Exact feature from CMU SO) -->
+                    <div class="report-item space-y-1">
+                        <div class="font-bold text-sm text-black">3. ญัตติที่เสนอเพื่ออภิปรายในที่ประชุม (${allMotions.length} ญัตติ):</div>
+                        <div class="pl-4 text-xs space-y-1">
+                            ${motionsListHtml}
                         </div>
                     </div>
 
-                    <!-- Bottom Grand Total Summary for Council Quorum -->
-                    <div class="pt-4 border-t-2 border-slate-900 font-bold text-center text-base tracking-wider report-item">
-                        รวมสมาชิกสภาฯ ____________ <span class="text-xl underline px-2">${TOTAL_MEMBERS}</span> ____________ คน
+                    <!-- Section 5: Council Leave List with reasons -->
+                    <div class="report-item space-y-1">
+                        <div class="font-bold text-sm text-black">4. สมาชิกสภาฯ ที่ลาการประชุม (${councilLeave.length} ท่าน):</div>
+                        <div class="pl-4 text-xs space-y-0.5">
+                            ${leaveItemsHtml}
+                        </div>
                     </div>
 
-                    <!-- Section 4: Subcommittee Members & Observers Attendance -->
-                    <div class="pt-4 border-t border-dashed border-slate-400 report-item">
-                        <div class="font-bold text-base text-black">
-                            4. อนุกรรมการ / ผู้สังเกตการณ์ ที่เข้าร่วม (${subResponses.length} คน)
+                    <!-- Section 6: Subcommittee Attendance -->
+                    <div class="report-item space-y-1">
+                        <div class="font-bold text-sm text-black">5. อนุกรรมการ / ผู้สังเกตการณ์ ที่เข้าร่วมประชุม (${subTotalAttending} ท่าน):</div>
+                        <div class="pl-4 text-xs space-y-0.5">
+                            ${subItemsHtml}
                         </div>
-                        <div class="pl-6 pt-1">
-                            <div class="pl-4 grid grid-cols-1 gap-y-1">
-                                ${subItemsHtml}
-                            </div>
+                    </div>
+
+                    <!-- Section 7: Unresponded Members -->
+                    <div class="report-item space-y-1">
+                        <div class="font-bold text-sm text-black">6. สมาชิกสภาฯ ที่ยังไม่ได้ตอบรับแบบฟอร์ม (${councilUnrespondedList.length} ท่าน):</div>
+                        <div class="pl-4 text-xs grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5">
+                            ${unrespondedCouncilHtml}
+                        </div>
+                    </div>
+
+                    <!-- Signatures Block -->
+                    <div class="pt-8 grid grid-cols-2 gap-6 text-center text-xs report-item">
+                        <div class="space-y-8">
+                            <p>ลงชื่อ ..............................................................<br>( .............................................................. )<br>เลขานุการการประชุม<br>สภานักศึกษา มหาวิทยาลัยเชียงใหม่</p>
+                        </div>
+                        <div class="space-y-8">
+                            <p>ลงชื่อ ..............................................................<br>( .............................................................. )<br>ประธานที่ประชุม<br>ประธานสภานักศึกษา มหาวิทยาลัยเชียงใหม่</p>
                         </div>
                     </div>
 
