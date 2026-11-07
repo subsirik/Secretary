@@ -187,7 +187,7 @@
                         </div>
                         <h3 class="text-lg font-bold text-slate-900">ปิดการรับคำตอบแล้ว</h3>
                         <p class="text-xs text-slate-600 max-w-xs">
-                            การประชุมนี้ได้เลยกำหนดเวลาปิดรับคำตอบแล้ว (เวลา GMT+7)
+                            การประชุมนี้ได้เลยกำหนดเวลาปิดรับคำตอบแล้ว (เวลา GMT+7) โปรดติดต่อเลขานุการสภา
                         </p>
                     </div>
 
@@ -360,12 +360,15 @@
 
                     <!-- Quorum Progress Bar (Council Members Only: X/34) -->
                     <div class="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                        <div class="flex justify-between text-xs font-semibold text-slate-800">
-                            <span>องค์ประชุมสภาฯ (Council Quorum): <strong id="quorumCounter" class="text-sky-900 font-mono text-sm">0/34</strong></span>
-                            <span id="quorumRuleText" class="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300 text-[11px]">เกณฑ์บังคับ > 50% (17 คน)</span>
+                        <div class="flex justify-between items-center text-xs font-semibold text-slate-800">
+                            <span>องค์ประชุมสภาฯ (Onsite + Online): <strong id="quorumCounter" class="text-sky-900 font-mono text-sm">0/34</strong></span>
+                            <span id="quorumRuleText" class="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded border border-amber-300 text-[11px]">เกณฑ์บังคับ ≥ 50% (17 คน)</span>
                         </div>
                         <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-slate-300">
                             <div id="quorumProgressBar" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 pt-0.5">
+                            <span>ตอบแบบฟอร์มแล้ว: <strong id="councilRespondedCounter" class="text-slate-700 font-mono">0</strong>/<span class="font-mono" id="councilTotalMembersSub">34</span> คน (ลาประชุม <span id="councilLeaveCounter" class="text-rose-600 font-bold">0</span> คน)</span>
                         </div>
                     </div>
 
@@ -517,7 +520,7 @@
 
     <!-- ================= FOOTER ================= -->
     <footer class="mt-6 border-t border-slate-200 bg-white py-4 text-center text-[11px] text-slate-500 no-print">
-        <p id="footerRosterText">© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting (34 Council Roster • 22 Subcommittee Roster)</p>
+        <p id="footerRosterText">© 2026 สภานักศึกษา • ระบบตอบรับ e-Meeting</p>
     </footer>
 
     <!-- ================= SECRETARY ADMIN MODAL (ออกลิงก์ & จัดการรายชื่อ) ================= -->
@@ -937,7 +940,7 @@
 
         function applyRostersUpdate() {
             TOTAL_MEMBERS = membersList.length;
-            QUORUM_THRESHOLD = Math.floor(TOTAL_MEMBERS / 2) + 1;
+            QUORUM_THRESHOLD = Math.ceil(TOTAL_MEMBERS * 0.5);
 
             councilMembersSet = new Set(membersList);
             subMembersSet = new Set(subMembersList);
@@ -950,7 +953,9 @@
 
             // Update Quorum criteria label
             const quorumRuleText = document.getElementById('quorumRuleText');
-            if (quorumRuleText) quorumRuleText.innerText = `เกณฑ์บังคับ > 50% (${QUORUM_THRESHOLD} คน)`;
+            if (quorumRuleText) quorumRuleText.innerText = `เกณฑ์บังคับ ≥ 50% (${QUORUM_THRESHOLD} คน)`;
+            const elTotalM = document.getElementById('councilTotalMembersSub');
+            if (elTotalM) elTotalM.innerText = TOTAL_MEMBERS;
 
             // Update footer
             const footerText = document.getElementById('footerRosterText');
@@ -1245,6 +1250,10 @@
             const councilLeave = councilResponses.filter(i => i.status === 'ลาประชุม').length;
             const totalCouncilResponded = councilResponses.length;
 
+            // STRICT QUORUM COUNT: Only Council members who are attending (Onsite + Online) form the quorum!
+            // Members on leave (ลาประชุม) do NOT count towards the quorum.
+            const councilTotalAttending = councilOnsite + councilOnline;
+
             // Subcommittee Stats
             const subOnsite = subResponses.filter(i => i.status === 'Onsite').length;
             const subOnline = subResponses.filter(i => i.status === 'Online').length;
@@ -1270,21 +1279,27 @@
             const elSubCnt = document.getElementById('cntGroupSub');
             if (elSubCnt) elSubCnt.innerText = subResponses.length;
 
-            // Quorum Logic (Strictly Council Members Only: >= 17 / 34)
-            document.getElementById('quorumCounter').innerText = `${totalCouncilResponded}/${TOTAL_MEMBERS}`;
-            document.getElementById('quorumCompactBadge').innerText = `องค์ประชุมสภาฯ: ${totalCouncilResponded}/${TOTAL_MEMBERS}`;
+            // Update Informational Response & Leave Counters
+            const elResponded = document.getElementById('councilRespondedCounter');
+            if (elResponded) elResponded.innerText = totalCouncilResponded;
+            const elLeave = document.getElementById('councilLeaveCounter');
+            if (elLeave) elLeave.innerText = councilLeave;
+
+            // Quorum Logic (Strictly Attending Council Members: Onsite + Online >= QUORUM_THRESHOLD / TOTAL_MEMBERS)
+            document.getElementById('quorumCounter').innerText = `${councilTotalAttending}/${TOTAL_MEMBERS}`;
+            document.getElementById('quorumCompactBadge').innerText = `องค์ประชุมสภาฯ: ${councilTotalAttending}/${TOTAL_MEMBERS}`;
             
-            const percentage = Math.min(Math.round((totalCouncilResponded / TOTAL_MEMBERS) * 100), 100);
+            const percentage = Math.min(Math.round((councilTotalAttending / TOTAL_MEMBERS) * 100), 100);
             document.getElementById('quorumProgressBar').style.width = `${percentage}%`;
 
             const quorumBadge = document.getElementById('quorumBadge');
-            if (totalCouncilResponded >= QUORUM_THRESHOLD) {
+            if (councilTotalAttending >= QUORUM_THRESHOLD) {
                 quorumBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-                quorumBadge.innerHTML = "✅ ครบองค์ประชุมสภาฯ แล้ว";
+                quorumBadge.innerHTML = `✅ ครบองค์ประชุมสภาฯ แล้ว (${councilTotalAttending}/${TOTAL_MEMBERS})`;
             } else {
-                const diff = QUORUM_THRESHOLD - totalCouncilResponded;
+                const diff = QUORUM_THRESHOLD - councilTotalAttending;
                 quorumBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
-                quorumBadge.innerHTML = `⏳ ขาดอีก ${diff} คนจะครบองค์สภาฯ`;
+                quorumBadge.innerHTML = `⏳ ขาดอีก ${diff} คนจะครบองค์สภาฯ (${councilTotalAttending}/${TOTAL_MEMBERS})`;
             }
         }
 
@@ -1499,7 +1514,7 @@
                         : '';
                     let leaveRuleNotice = isLeave 
                         ? `<div class="mt-1 text-[11px] text-amber-900 bg-amber-50/90 p-1.5 rounded border border-amber-300 leading-normal">
-                            ⚠️ <em>ข้อบังคับ:</em> สมาชิกสภาฯ ที่ลาประชุมสามารถเสนอญัตติได้ แต่หากไม่มาอภิปรายในที่ประชุม ญัตติเป็นอันตกไป เว้นแต่มอบหมายผู้อื่นอภิปรายแทน โดยควรแจ้งเลขานุการสภาฯ หรือประธานการประชุมเพื่อการประสานงานต่อไป
+                            ⚠️ <em>ข้อบังคับ:</em> สมาชิกสภาฯ ที่ลาประชุมสามารถเสนอญัตติได้ แต่หากไม่มาอภิปรายในที่ประชุม ญัตติตกไป เว้นแต่มอบหมายผู้อื่นอภิปรายแทน โดยควรแจ้งเลขานุการสภาฯ หรือประธานการประชุมเพื่อการประสานงานต่อไป
                            </div>` 
                         : '';
 
@@ -1569,7 +1584,7 @@
                             <span>${isQuorumReached ? '✅ ครบองค์ประชุมสภาฯ' : '⏳ ยังไม่ครบองค์ประชุมสภาฯ'}</span>
                         </div>
                         <div class="text-xs text-slate-700">
-                            เกณฑ์บังคับกึ่งหนึ่งตามข้อบังคับ: ต้องมีสมาชิกสภาฯ เข้าร่วมประชุม (Onsite + Online) <strong>มากกว่า ${QUORUM_THRESHOLD - 1} คน (อย่างน้อย ${QUORUM_THRESHOLD} คน)</strong> จากจำนวนสมาชิกสภาฯ ทั้งหมด <strong>${TOTAL_MEMBERS}</strong> คน
+                            เกณฑ์บังคับกึ่งหนึ่งตามข้อบังคับ: ต้องมีสมาชิกสภาฯ เข้าร่วมประชุม (Onsite + Online) <strong>ไม่น้อยกว่ากึ่งหนึ่ง (อย่างน้อย ${QUORUM_THRESHOLD} คน)</strong> จากจำนวนสมาชิกสภาฯ ทั้งหมด <strong>${TOTAL_MEMBERS}</strong> คน
                         </div>
                         <div class="font-bold text-sm pt-1 border-t border-slate-300 flex justify-between">
                             <span>สมาชิกสภาฯ ตอบรับเข้าร่วมนับเป็นองค์ประชุม:</span>
